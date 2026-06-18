@@ -1,0 +1,19 @@
+/vis/open OGL
+/vis/viewer/set/viewpointVector 1 1 1
+/vis/drawVolume
+/vis/viewer/set/autoRefresh true
+/vis/scene/add/trajectories smooth
+/vis/scene/add/scale 10 cm
+/vis/geometry/set/visibility logicPIPS 1
+/vis/geometry/set/forceWireframe logicPIPS 1
+/vis/geometry/set/forceAuxEdgeVisible logicPIPS 1
+/vis/geometry/set/visibility logicfAm 1
+/vis/geometry/set/forceWireframe logicfAm 1
+/vis/geometry/set/forceAuxEdgeVisible logicfAm 1
+/vis/geometry/set/visibility logicAm 1
+/vis/geometry/set/forceWireframe logicAm 1
+/vis/geometry/set/forceAuxEdgeVisible logicAm 1
+# /vis/scene/add/axes
+/vis/scene/add/eventID
+/vis/scene/endOfEventAction accumulate
+

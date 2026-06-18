@@ -1,0 +1,40 @@
+#/control/alias NumberOfParticles 1000
+/run/numberOfThreads 16
+/run/initialize 
+#初始化Geant4内核
+/gps/particle ion
+# Bi-212(ThC)
+/gps/ion {Znum} {Anum}
+# Am-241
+#/gps/ion 95 241
+
+/gps/energy 0. eV
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 -0.5 mm
+/gps/pos/radius 3 mm
+# /gps/direction 0 0 1
+#/gps/ang/type iso
+#/gps/ang/mintheta 1.570796
+#/gps/ang/maxtheta 3.141592
+#/gps/particle alpha
+/gps/number 1
+
+# Energy spectrum
+#/gps/ene/type Arb
+#/gps/hist/type arb
+
+#--------------E(MeV)--intensity
+# Am-241
+#/gps/hist/point 5.4856 0.851
+#/gps/hist/point 5.4429 0.133
+# Po-210
+#/gps/hist/point 4.6044 0.000124
+#/gps/hist/point 5.4075 0.9999876
+
+#/gps/hist/point 8.78
+#/gps/hist/inter Lin
+#/control/alias   NumberOfParticles 1000
+/process/had/rdm/nucleusLimits {Anum} {Anum} {Znum} {Znum} 
+/run/beamOn {NumberOfParticles}

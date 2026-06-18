@@ -1,0 +1,35 @@
+/run/numberOfThreads 16
+/run/initialize 
+
+/gps/particle gamma
+/gps/energy 0.1 MeV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 -11 mm
+/gps/pos/radius 10 mm
+#/gps/direction 0 0 1
+/gps/ang/minphi 0. deg
+/gps/ang/maxphi 180. deg
+/gps/number 1
+
+/gps/source/add 1
+/gps/particle gamma
+/gps/energy 0.1 MeV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 1.7 2.944 -11 mm
+/gps/pos/radius 1.6 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/gps/source/add 1
+/gps/particle gamma
+/gps/energy 0.1 MeV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 1.7 -2.944 -11 mm
+/gps/pos/radius 1.6 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

@@ -1,0 +1,30 @@
+/vis/open OGL
+/vis/viewer/set/viewpointVector 1 1 1
+/vis/drawVolume
+/vis/viewer/set/autoRefresh true
+/vis/scene/add/trajectories smooth
+/vis/scene/add/scale 10 cm
+# /vis/scene/add/axes
+/vis/scene/add/eventID
+/vis/scene/endOfEventAction accumulate
+
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 0 mm
+/gps/pos/radius 10 mm
+# /gps/direction 0 0 1
+/gps/ang/type iso
+/gps/ang/mintheta 1.570796
+/gps/ang/maxtheta 3.141592
+/gps/particle alpha
+/gps/number 1
+
+# Energy spectrum
+/gps/ene/type Arb
+/gps/hist/type arb
+
+#--------------E(MeV)--intensity
+/gps/hist/point 5.4856 0.851
+/gps/hist/point 5.4429 0.133
+/gps/hist/inter Lin
+#/run/beamOn 10000

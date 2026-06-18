@@ -1,0 +1,14 @@
+/run/numberOfThreads 16
+/run/initialize 
+
+#1
+/gps/particle ion
+/gps/ion {Znum} {Anum}
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 -1.5 mm
+/gps/pos/radius 3.15 mm
+/gps/number 1
+/process/had/rdm/nucleusLimits {Anum} {Znum} {Anum} {Znum}
+/run/beamOn {NumberOfParticles}

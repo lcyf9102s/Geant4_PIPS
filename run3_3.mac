@@ -1,0 +1,39 @@
+/run/numberOfThreads 16
+/run/initialize 
+
+#1
+/gps/particle ion
+/gps/ion {Znum} {Anum}
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 3.4 -1.5 mm
+/gps/pos/radius 1.6 mm
+/gps/number 1
+/process/had/rdm/nucleusLimits {Anum} {Znum} {Anum} {Znum}
+
+#2
+/gps/source/add 1
+/gps/particle ion
+/gps/ion {Znum} {Anum}
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 2.944 -1.7 -1.5 mm
+/gps/pos/radius 1.6 mm
+/gps/number 1
+/process/had/rdm/nucleusLimits {Anum} {Znum} {Anum} {Znum}
+
+#3
+/gps/source/add 1
+/gps/particle ion
+/gps/ion {Znum} {Anum}
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre -2.944 -1.7 -1.5 mm
+/gps/pos/radius 1.6 mm
+/gps/number 1
+/process/had/rdm/nucleusLimits {Anum} {Znum} {Anum} {Znum}
+
+/run/beamOn {NumberOfParticles}

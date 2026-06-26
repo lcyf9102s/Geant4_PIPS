@@ -16,6 +16,7 @@
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TRandom3.h"
 
 void nn()
 {
@@ -84,15 +85,25 @@ void csv_to_dat(){
 
     // --- Verification: Print the contents of the vector ---
     std::cout << "Successfully read " << data_column.size() << " data points." << std::endl;
-    //std::cout << "First 10 values: " << std::endl;
+
+    // Electronics broadening model: FWHM(E)^2 = FWHM_noise^2 + 2.355^2 * F * eps * E
+    // FWHM_noise: electronic noise (MeV), F: Si Fano factor, eps: ionization energy per e-h pair (MeV)
+    const double FWHM_noise = 0.015;   // 15 keV
+    const double F_fano     = 0.12;    // Si Fano factor
+    const double eps_si     = 3.62e-6; // MeV per e-h pair in Si
+
     G4double totalEnergy = 0.0;
     for (size_t i = 0; i < data_column.size(); ++i) {
-        //std::cout << data_column[i] << std::endl;
-        totalEnergy += data_column[i];
-        if((data_column[i] > 3)&&(data_column[i] < 15))
-        {
-            int ch = ceil(((data_column[i]-3)*2048)/12);
-            MCHist[ch] += 1;
+        double E_true = data_column[i];
+        totalEnergy += E_true;
+        if (E_true > 0) {
+            double fwhm2 = FWHM_noise * FWHM_noise + 5.5460 * F_fano * eps_si * E_true;
+            double sigma  = std::sqrt(fwhm2) / 2.355;
+            double E_meas = gRandom->Gaus(E_true, sigma);
+            if (E_meas > 3 && E_meas < 15) {
+                int ch = ceil(((E_meas - 3) * 2048) / 12);
+                MCHist[ch] += 1;
+            }
         }
     }
     G4cout << "Total energy: " << totalEnergy * 1.6 * pow(10, -13) << " J" << G4endl;

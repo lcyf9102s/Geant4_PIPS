@@ -127,4 +127,4 @@ The parameter `FWHM_noise` can be adjusted in `csv_to_dat()` in [g4decay.cc](g4d
 | `G4DecayPhysics` | Particle decays |
 | `G4RadioactiveDecayPhysics` | Radioactive decay chains |
 
-The radioactive decay time threshold is set to 200 days to capture the full Am-241 → Np-237 chain.
+The radioactive decay time threshold is set to 200 days in `main()` via `SetTimeThresholdForRadioactiveDecay`. This value must be adjusted to match the nuclide being simulated — it should be significantly larger than the half-life of the primary isotope. For example, Am-241 (T½ = 432 years) requires a threshold of several hundred to thousands of years, while Po-218 (T½ = 3.05 min) works fine with 200 days.

@@ -43,6 +43,11 @@ The executable `G4Decay` and all `.mac` files are placed in the build directory.
 
 Loads `vis.mac` automatically and opens the OGL viewer.
 
+> **Wayland users:** if the visualization window appears blank, set the following before running:
+> ```bash
+> export XDG_SESSION_TYPE=x11
+> ```
+
 ### Batch mode
 
 ```bash

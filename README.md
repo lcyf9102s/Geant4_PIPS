@@ -123,6 +123,16 @@ $$\mathrm{FWHM}(E) = \sqrt{\mathrm{FWHM_{noise}}^2 + 2.355^2 \cdot F \cdot \vare
 
 The parameter `FWHM_noise` can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
+### Example spectra
+
+10000 Po-218 decays simulated with `run3_3.mac`, shown at three `FWHM_noise` settings:
+
+| FWHM_noise = 15 keV (default) | FWHM_noise = 150 keV | FWHM_noise = 500 keV |
+|---|---|---|
+| ![FWHM 15 keV](docs/images/spectrum_fwhm_015.png) | ![FWHM 150 keV](docs/images/spectrum_fwhm_150.png) | ![FWHM 500 keV](docs/images/spectrum_fwhm_500.png) |
+
+As `FWHM_noise` increases, the alpha peak flattens and broadens while the total event count is conserved.
+
 ## Physics list
 
 | Module | Purpose |

@@ -155,7 +155,11 @@ int main(int argc, char** argv)
 
 
     // runManager->Initialize();
-    G4HadronicParameters::Instance()->SetTimeThresholdForRadioactiveDecay( 200*CLHEP::day );
+    // Nuclides with a half-life above this threshold are treated as stable and
+    // never decay in the simulation. 200 days was far too short for isotopes
+    // like Cs-137 (T half-life = 30.17 years) or Am-241 (T half-life = 432 years),
+    // which silently never decayed. 1000 years comfortably covers both.
+    G4HadronicParameters::Instance()->SetTimeThresholdForRadioactiveDecay( 1000*CLHEP::year );
 
     G4UIExecutive *ui = 0;
     if(argc == 1)

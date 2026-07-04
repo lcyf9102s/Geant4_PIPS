@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) detector for alpha-particle efficiency measurements. The source is an Am-241 disc (modeled as G4_Fe, a stand-in for the encapsulation), and the primary observable is alpha-particle energy deposition in the Si active layer. A second channel scores energy deposition in an HPGe crystal (see below), primarily for gamma spectroscopy. ROOT is used for post-processing and plotting.
 
-**Known bug:** the radioactive decay time threshold (`SetTimeThresholdForRadioactiveDecay`, set to 200 days in `main()`) is far shorter than Am-241's 432-year half-life. Nuclides with a half-life above this threshold are treated as effectively stable and never decay within the simulation — so batch runs using an actual Am-241 ion source (`/gps/ion 95 241`, e.g. `run3.mac`) currently produce **zero** alpha (or gamma) counts. This has been verified empirically; it is not a geometry issue. Short-lived isotopes (e.g. Po-218, T½ = 3.1 min) are unaffected and decay normally. Fixing this requires raising the threshold to something well above 432 years (e.g. `1000*year`) — but that is a project-wide change orthogonal to any single feature, not something to bundle into an unrelated branch.
+**Fixed bug:** the radioactive decay time threshold (`SetTimeThresholdForRadioactiveDecay` in `main()`) used to be 200 days — far shorter than Am-241's 432-year or Cs-137's 30.17-year half-life. Nuclides with a half-life above this threshold are treated as effectively stable and never decay within the simulation, so batch runs using those ion sources used to produce **zero** counts (verified empirically; not a geometry issue). It is now set to `1000*year`, comfortably covering both. Short-lived isotopes (e.g. Po-218, T½ = 3.1 min) were always unaffected.
 
 ## Build
 
@@ -103,6 +103,7 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run3v.mac` | run3 variant |
 | `run2.mac` | Alternative configuration |
 | `run_hpge_gamma.mac` | Direct 59.5 keV gamma source aimed at the HPGe crystal, bypassing ion/decay physics — for validating HPGe geometry/scoring in isolation |
+| `run_cs137_hpge.mac` | Cs-137 ion source (z=+50 mm) aimed at HPGe; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |
 

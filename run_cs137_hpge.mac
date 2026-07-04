@@ -1,0 +1,22 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Cs-137 (T half-life = 30.17 y) beta-decays to Ba-137m (T half-life = 2.55 min),
+# which de-excites via a 661.7 keV gamma in ~85% of decays. Requires the
+# radioactive decay time threshold in g4decay.cc to exceed 30.17 years (see
+# SetTimeThresholdForRadioactiveDecay in main()) or the Cs-137 ion never decays.
+#
+# Source is placed 50 mm in front of the HPGe end cap (which sits at z=100 mm)
+# so gammas from the isotropic decay have a reasonable solid-angle chance of
+# reaching the crystal. There is no PIPS-relevant emission (Cs-137 has no
+# alpha branch), so this macro only targets HPGe.
+/gps/particle ion
+/gps/ion 55 137
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

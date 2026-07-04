@@ -65,7 +65,11 @@ void csv_to_dat(){
     const double F_fano_Si       = 0.12;     // Si Fano factor
     const double eps_Si          = 3.62e-6;  // MeV per e-h pair in Si
 
-    const double FWHM_noise_HPGe = 0.0015;   // 1.5 keV, typical HPGe electronics noise
+    // FWHM_noise_HPGe calibrated to ORTEC's published GEM40 warranted resolution
+    // specs (GEM Series Product Configuration Guide): 0.87 keV FWHM @ 122 keV,
+    // 1.8 keV FWHM @ 1.33 MeV (Co-60), after subtracting the Fano contribution
+    // below -- both spec points independently imply ~0.63-0.70 keV.
+    const double FWHM_noise_HPGe = 0.00065;  // 0.65 keV, ORTEC GEM40-derived
     const double F_fano_Ge       = 0.13;     // Ge Fano factor
     const double eps_Ge          = 2.96e-6;  // MeV per e-h pair in Ge
 

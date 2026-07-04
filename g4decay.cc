@@ -18,7 +18,7 @@
 #include "TStyle.h"
 #include "TRandom3.h"
 
-void plotSpectrum(const char *datFile, const char *pngFile)
+void plotSpectrum(const char *datFile, const char *pngFile, int nBins)
 {
     using namespace std;
     TGraph *graph = new TGraph();
@@ -44,21 +44,23 @@ void plotSpectrum(const char *datFile, const char *pngFile)
     TCanvas *canvas = new TCanvas("canvas", "Energy Deposition Spectrum", 800, 600);
     graph->Draw("AL");
 
-    graph->GetXaxis()->SetRangeUser(0, 2047);
+    graph->GetXaxis()->SetRangeUser(0, nBins - 1);
     canvas->Update();
     canvas->SaveAs(pngFile);
     delete canvas;
 }
 
-void nn() { plotSpectrum("output_fin.dat", "EnergyDeposition.png"); }
-void nnHPGe() { plotSpectrum("output_fin_HPGe.dat", "EnergyDepositionHPGe.png"); }
+void nn() { plotSpectrum("output_fin.dat", "EnergyDeposition.png", 2048); }
+void nnHPGe() { plotSpectrum("output_fin_HPGe.dat", "EnergyDepositionHPGe.png", 4096); }
 
 void csv_to_dat(){
     std::string filename = "merge.csv"; // Your file name
-    // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV.
-    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-3 MeV (gamma range).
-    std::vector<G4double> MCHist(2048, 0.0);
-    std::vector<G4double> MCHistHPGe(2048, 0.0);
+    // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
+    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-3 MeV, 4096 channels.
+    const int nBinsPIPS = 2048;
+    const int nBinsHPGe = 4096;
+    std::vector<G4double> MCHist(nBinsPIPS, 0.0);
+    std::vector<G4double> MCHistHPGe(nBinsHPGe, 0.0);
 
     // Electronics broadening model: FWHM(E)^2 = FWHM_noise^2 + 2.355^2 * F * eps * E
     const double FWHM_noise      = 0.015;    // 15 keV, PIPS electronics noise
@@ -110,7 +112,7 @@ void csv_to_dat(){
             double sigma  = std::sqrt(fwhm2) / 2.355;
             double E_meas = gRandom->Gaus(E_pips, sigma);
             if (E_meas > 3 && E_meas < 15) {
-                int ch = ceil(((E_meas - 3) * 2048) / 12);
+                int ch = ceil(((E_meas - 3) * nBinsPIPS) / 12);
                 MCHist[ch] += 1;
             }
         }
@@ -119,8 +121,8 @@ void csv_to_dat(){
             double fwhm2 = FWHM_noise_HPGe * FWHM_noise_HPGe + 5.5460 * F_fano_Ge * eps_Ge * E_hpge;
             double sigma  = std::sqrt(fwhm2) / 2.355;
             double E_meas = gRandom->Gaus(E_hpge, sigma);
-            int ch = floor((E_meas * 2048) / 3);
-            if (ch >= 0 && ch < 2048) {
+            int ch = floor((E_meas * nBinsHPGe) / 3);
+            if (ch >= 0 && ch < nBinsHPGe) {
                 MCHistHPGe[ch] += 1;
             }
         }
@@ -132,14 +134,14 @@ void csv_to_dat(){
     G4cout << "Total energy (PIPS): " << totalEnergy * 1.6 * pow(10, -13) << " J" << G4endl;
 
     std::ofstream outFile("output_fin.dat");
-    for(int i = 0; i < 2048; i++)
+    for(int i = 0; i < nBinsPIPS; i++)
     {
         outFile << i << " " << MCHist[i] << "\n";
     }
     outFile.close();
 
     std::ofstream outFileHPGe("output_fin_HPGe.dat");
-    for(int i = 0; i < 2048; i++)
+    for(int i = 0; i < nBinsHPGe; i++)
     {
         outFileHPGe << i << " " << MCHistHPGe[i] << "\n";
     }

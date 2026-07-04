@@ -87,7 +87,7 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `merge.csv` | Merged n-tuple from all threads |
 | `output.dat` | Per-run PIPS histogram from `MyRunAction` — **broken under MT** (see Known issues) |
 | `output_fin.dat` | Final PIPS spectrum after electronics broadening, 2048 channels over 3–15 MeV |
-| `output_fin_Scint.dat` | Final scintillator spectrum after broadening, 2048 channels over 0–2 MeV |
+| `output_fin_Scint.dat` | Final scintillator spectrum after broadening, 2048 channels over 0–1 MeV |
 | `total_energy.dat` | Total deposited energy and kerma in the PIPS scoring volume |
 | `EnergyDeposition.png` | Plot of `output_fin.dat` (PIPS, full range) |
 | `EnergyDepositionScint.png` | Plot of `output_fin_Scint.dat` (scintillator, full range) |

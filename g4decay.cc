@@ -56,10 +56,10 @@ void nnScint() { plotSpectrum("output_fin_Scint.dat", "EnergyDepositionScint.png
 void csv_to_dat(){
     std::string filename = "merge.csv"; // Your file name
     // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
-    // Column 1 (EdepScint): NaI(Tl) scintillator, any particle, binned over 0-2 MeV, 2048 channels.
+    // Column 1 (EdepScint): NaI(Tl) scintillator, any particle, binned over 0-1 MeV, 2048 channels.
     const int nBinsPIPS = 2048;
     const int nBinsScint = 2048;
-    const double maxEnergyScint = 2.0; // MeV
+    const double maxEnergyScint = 1.0; // MeV
     std::vector<G4double> MCHist(nBinsPIPS, 0.0);
     std::vector<G4double> MCHistScint(nBinsScint, 0.0);
 

@@ -1,0 +1,20 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Direct 59.5 keV gamma source (Am-241's main gamma line) aimed at the HPGe
+# crystal, bypassing ion/decay physics entirely. Useful for validating the
+# HPGe geometry and scoring in isolation.
+#
+# {Znum}/{Anum} are unused by this macro but main() still expects 4 batch
+# arguments, so pass any placeholder values, e.g.:
+#   ./G4Decay run_hpge_gamma.mac 20000 1 1
+/gps/particle gamma
+/gps/energy 59.5 keV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 -1.5 mm
+/gps/pos/radius 3 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

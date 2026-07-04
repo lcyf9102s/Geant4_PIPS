@@ -151,9 +151,8 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     //physScintillator = new G4PVPlacement(0, G4ThreeVector(0., 0., 100.*cm), logicScintillator, "physScintillator", logicVacuum, false, 0, true);
     
     
-    //solidHPGe = new G4Tubs("solidHPGe", 0.*cm, 5.*cm, 10*cm, 0*deg, 360*deg);
-    //logicHPGe = new G4LogicalVolume(solidHPGe, HPGe, "logicHPGe");
-    //physHPGe = new G4PVPlacement(0, G4ThreeVector(0., 0., 15.*cm), logicHPGe, "physHPGe", logicWorld, false, 0, true);
+    ConstructHPGe();
+
     G4double pRmin = 0 * mm, pRmax = 20 * mm, pDz = 2 * mm;
     G4double pSphi = 0 * deg, pDphi = 360 * deg;
     solidAm = new G4Tubs("Am-241", pRmin, pRmax, 0.5 * pDz, pSphi, pDphi);
@@ -220,6 +219,70 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     }
 
     return physWorld;
+}
+
+void MyDetectorConstruction::ConstructHPGe()
+{
+    // p-type closed-end coaxial HPGe crystal: bore hole with an n+ (Li-diffused)
+    // liner, and a p+ (boron-implanted) contact uniformly shrinking the outer
+    // surface. Only solidHPGeActive (the crystal minus both contact regions) is
+    // scored; solidHPGeBody's shell between it and the true outer/bore surfaces
+    // represents the dead/contact layers.
+    G4double Rc = 30. * mm;        // crystal outer radius
+    G4double Lc = 60. * mm;        // crystal length
+    G4double Rb_hole = 5. * mm;    // mechanical bore radius
+    G4double Ld_hole = 50. * mm;   // bore depth from the back face (leaves a 10 mm solid front end)
+    G4double t_outer = 0.3 * um;   // p+ contact thickness (outer curved surface + faces)
+    G4double t_inner = 0.5 * mm;   // n+ contact thickness (bore liner)
+    G4double Rb_liner = Rb_hole + t_inner;
+
+    // Bore opens at the crystal's back face (local +z) and cuts inward.
+    G4double boreZ = Lc / 2. - Ld_hole / 2.;
+
+    solidHPGeEnvelope = new G4Tubs("solidHPGeEnvelope", 0., Rc, Lc / 2., 0. * deg, 360. * deg);
+    solidHPGeBoreMech = new G4Tubs("solidHPGeBoreMech", 0., Rb_hole, Ld_hole / 2., 0. * deg, 360. * deg);
+    solidHPGeBody = new G4SubtractionSolid("solidHPGeBody", solidHPGeEnvelope, solidHPGeBoreMech,
+                                            0, G4ThreeVector(0., 0., boreZ));
+
+    solidHPGeActiveEnv = new G4Tubs("solidHPGeActiveEnv", 0., Rc - t_outer, (Lc - 2. * t_outer) / 2., 0. * deg, 360. * deg);
+    solidHPGeBoreLiner = new G4Tubs("solidHPGeBoreLiner", 0., Rb_liner, Ld_hole / 2., 0. * deg, 360. * deg);
+    solidHPGeActive = new G4SubtractionSolid("solidHPGeActive", solidHPGeActiveEnv, solidHPGeBoreLiner,
+                                              0, G4ThreeVector(0., 0., boreZ));
+
+    logicHPGeBody = new G4LogicalVolume(solidHPGeBody, HPGe, "logicHPGeBody");
+    logicHPGeActive = new G4LogicalVolume(solidHPGeActive, HPGe, "logicHPGeActive");
+    fScoringVolumeHPGe = logicHPGeActive;
+
+    // The outer contact shrink is uniform, so the active volume is concentric
+    // with the body -- no placement offset needed.
+    physHPGeActive = new G4PVPlacement(0, G4ThreeVector(0., 0., 0.), logicHPGeActive,
+                                        "physHPGeActive", logicHPGeBody, false, 0, true);
+
+    // Aluminum end cap (cryostat housing) with a vacuum gap around the crystal.
+    G4double gapSide = 5. * mm, gapFront = 5. * mm, gapBack = 5. * mm, tAl = 1. * mm;
+    G4double capInnerR = Rc + gapSide;
+    G4double capInnerHalfZ = (Lc + gapFront + gapBack) / 2.;
+    G4double capOuterR = capInnerR + tAl;
+    G4double capOuterHalfZ = capInnerHalfZ + tAl;
+
+    solidHPGeEndCapCavity = new G4Tubs("solidHPGeEndCapCavity", 0., capInnerR, capInnerHalfZ, 0. * deg, 360. * deg);
+    solidHPGeEndCapOuter = new G4Tubs("solidHPGeEndCapOuter", 0., capOuterR, capOuterHalfZ, 0. * deg, 360. * deg);
+    solidHPGeEndCap = new G4SubtractionSolid("solidHPGeEndCap", solidHPGeEndCapOuter, solidHPGeEndCapCavity,
+                                              0, G4ThreeVector(0., 0., 0.));
+
+    logicHPGeEndCap = new G4LogicalVolume(solidHPGeEndCap, Al_mat, "logicHPGeEndCap");
+    logicHPGeVacuum = new G4LogicalVolume(solidHPGeEndCapCavity, vacuum, "logicHPGeVacuum");
+
+    G4double hpgeZ = 100. * mm; // stand-off distance of the end cap from the world origin
+    physHPGeEndCap = new G4PVPlacement(0, G4ThreeVector(0., 0., hpgeZ), logicHPGeEndCap,
+                                        "physHPGeEndCap", logicVacuum, false, 0, true);
+    physHPGeVacuum = new G4PVPlacement(0, G4ThreeVector(0., 0., hpgeZ), logicHPGeVacuum,
+                                        "physHPGeVacuum", logicVacuum, false, 0, true);
+
+    // Crystal front face sits gapFront behind the cap's inner front wall.
+    G4double bodyZ = -capInnerHalfZ + gapFront + Lc / 2.;
+    physHPGeBody = new G4PVPlacement(0, G4ThreeVector(0., 0., bodyZ), logicHPGeBody,
+                                      "physHPGeBody", logicHPGeVacuum, false, 0, true);
 }
 
 void MyDetectorConstruction::ConstructSDandField()

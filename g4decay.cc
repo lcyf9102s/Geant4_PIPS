@@ -56,9 +56,10 @@ void nnHPGe() { plotSpectrum("output_fin_HPGe.dat", "EnergyDepositionHPGe.png", 
 void csv_to_dat(){
     std::string filename = "merge.csv"; // Your file name
     // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
-    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-3 MeV, 4096 channels.
+    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-1 MeV, 4096 channels.
     const int nBinsPIPS = 2048;
     const int nBinsHPGe = 4096;
+    const double maxEnergyHPGe = 1.0; // MeV
     std::vector<G4double> MCHist(nBinsPIPS, 0.0);
     std::vector<G4double> MCHistHPGe(nBinsHPGe, 0.0);
 
@@ -121,7 +122,7 @@ void csv_to_dat(){
             double fwhm2 = FWHM_noise_HPGe * FWHM_noise_HPGe + 5.5460 * F_fano_Ge * eps_Ge * E_hpge;
             double sigma  = std::sqrt(fwhm2) / 2.355;
             double E_meas = gRandom->Gaus(E_hpge, sigma);
-            int ch = floor((E_meas * nBinsHPGe) / 3);
+            int ch = floor((E_meas * nBinsHPGe) / maxEnergyHPGe);
             if (ch >= 0 && ch < nBinsHPGe) {
                 MCHistHPGe[ch] += 1;
             }

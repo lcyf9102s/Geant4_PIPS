@@ -146,11 +146,8 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     logicRadiator = new G4LogicalVolume(solidRadiator, icruSphereMaterial, "logicRadiator"); // logical  radiator
     physRadiator = new G4PVPlacement(0, G4ThreeVector(0., 0., 1*m), logicRadiator, "physRadiator", logicVacuum, false, 0, true); //  physical radiator
 
-    //solidScintillator = new G4Tubs("solidScintillator", 0.*cm, 8.*cm, 10*cm, 0*deg, 360*deg);
-    //logicScintillator = new G4LogicalVolume(solidScintillator, NaI, "logicScintillator");
-    //physScintillator = new G4PVPlacement(0, G4ThreeVector(0., 0., 100.*cm), logicScintillator, "physScintillator", logicVacuum, false, 0, true);
-    
-    
+    ConstructScintillator();
+
     //solidHPGe = new G4Tubs("solidHPGe", 0.*cm, 5.*cm, 10*cm, 0*deg, 360*deg);
     //logicHPGe = new G4LogicalVolume(solidHPGe, HPGe, "logicHPGe");
     //physHPGe = new G4PVPlacement(0, G4ThreeVector(0., 0., 15.*cm), logicHPGe, "physHPGe", logicWorld, false, 0, true);
@@ -220,6 +217,39 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     }
 
     return physWorld;
+}
+
+void MyDetectorConstruction::ConstructScintillator()
+{
+    // Classic 3"x3" NaI(Tl) cylindrical crystal in a thin Al housing with a
+    // small gap for the MgO reflector packing (modeled as air, same as the
+    // surrounding logicVacuum medium -- no separate gap volume needed since
+    // both crystal and housing are placed directly as siblings in logicVacuum).
+    G4double crystalR = 38.1 * mm;   // 3" diameter
+    G4double crystalHalfZ = 38.1 * mm; // 3" length
+    G4double gap = 1.5 * mm;         // reflector packing
+    G4double tAl = 0.5 * mm;         // housing wall thickness
+
+    solidScintillator = new G4Tubs("solidScintillator", 0., crystalR, crystalHalfZ, 0. * deg, 360. * deg);
+    logicScintillator = new G4LogicalVolume(solidScintillator, NaI, "logicScintillator");
+    fScoringVolumeScint = logicScintillator;
+
+    G4double cavityR = crystalR + gap;
+    G4double cavityHalfZ = crystalHalfZ + gap;
+    G4double outerR = cavityR + tAl;
+    G4double outerHalfZ = cavityHalfZ + tAl;
+
+    solidScintHousingCavity = new G4Tubs("solidScintHousingCavity", 0., cavityR, cavityHalfZ, 0. * deg, 360. * deg);
+    solidScintHousingOuter = new G4Tubs("solidScintHousingOuter", 0., outerR, outerHalfZ, 0. * deg, 360. * deg);
+    solidScintHousing = new G4SubtractionSolid("solidScintHousing", solidScintHousingOuter, solidScintHousingCavity,
+                                                0, G4ThreeVector(0., 0., 0.));
+    logicScintHousing = new G4LogicalVolume(solidScintHousing, Al_mat, "logicScintHousing");
+
+    G4double scintZ = 100. * mm; // stand-off distance from the world origin
+    physScintillator = new G4PVPlacement(0, G4ThreeVector(0., 0., scintZ), logicScintillator,
+                                          "physScintillator", logicVacuum, false, 0, true);
+    physScintHousing = new G4PVPlacement(0, G4ThreeVector(0., 0., scintZ), logicScintHousing,
+                                          "physScintHousing", logicVacuum, false, 0, true);
 }
 
 void MyDetectorConstruction::ConstructSDandField()

@@ -17,6 +17,7 @@ void MySteppingAction::UserSteppingAction(const G4Step *step)
 
     const MyDetectorConstruction *detectorConstruction = static_cast<const MyDetectorConstruction*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
     G4LogicalVolume *fScoringVolume = detectorConstruction->GetScoringVolume();
+    G4LogicalVolume *fScoringVolumeScint = detectorConstruction->GetScintScoringVolume();
     G4String particleName = step->GetTrack()->GetDefinition()->GetParticleName();
 
     if(volume == fScoringVolume && particleName == "alpha" )
@@ -28,6 +29,9 @@ void MySteppingAction::UserSteppingAction(const G4Step *step)
         G4double volume = step->GetTrack()->GetVolume()->GetLogicalVolume()->GetSolid()->GetCubicVolume();
         fEventAction->vmasscalc(mat_dense, volume);
     }
-    //G4double edep = step->GetTotalEnergyDeposit();
-    //fEventAction->AddEdep(edep);
+    else if(volume == fScoringVolumeScint)
+    {
+        G4double edepScint = step->GetTotalEnergyDeposit();
+        fEventAction->AddEdepScint(edepScint);
+    }
 }

@@ -11,7 +11,6 @@ Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) de
 - Multi-threaded simulation (16 threads via Geant4 MT)
 - Automatic post-processing: per-thread CSV merge → binned spectra → PNG plots, for both PIPS and the scintillator
 - Electronics/detector broadening model per detector: Gaussian smearing with Fano noise for PIPS, photon-statistics scaling law for the scintillator (calibrated to a published 3"x3" NaI(Tl) spec)
-- Auto-zoomed peak plot for the scintillator to visualize the (broad) Gaussian shape at a glance
 
 ## Dependencies
 
@@ -92,7 +91,6 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `total_energy.dat` | Total deposited energy and kerma in the PIPS scoring volume |
 | `EnergyDeposition.png` | Plot of `output_fin.dat` (PIPS, full range) |
 | `EnergyDepositionScint.png` | Plot of `output_fin_Scint.dat` (scintillator, full range) |
-| `EnergyDepositionScint_peak.png` | Same scintillator data, auto-zoomed ±40 channels around the tallest peak |
 
 ## Macro files
 
@@ -163,11 +161,11 @@ Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
 As `FWHM_noise` increases, the alpha peak flattens and broadens while the total event count is conserved.
 
-For the scintillator, the physical FWHM at 662 keV (~50 keV) is much larger than HPGe's (~1-2 keV), so the peak is visibly broad even in the full-spectrum plot — but `EnergyDepositionScint_peak.png` still zooms ±40 channels around the tallest bin for a closer look:
+For the scintillator, the physical FWHM at 662 keV (~50 keV) is much larger than HPGe's (~1-2 keV), so the peak is visibly broad even in the full-spectrum plot:
 
 100000 Cs-137 decays via `run_cs137_scint.mac` — the broad 661.7 keV photopeak, noticeably rougher and wider than an HPGe photopeak at the same energy:
 
-![Scintillator peak zoom](docs/images/spectrum_scint_cs137_peak.png)
+![Scintillator spectrum](docs/images/spectrum_scint_cs137.png)
 
 ## Physics list
 

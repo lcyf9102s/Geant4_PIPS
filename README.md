@@ -91,6 +91,7 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `total_energy.dat` | Total deposited energy and kerma in the PIPS scoring volume |
 | `EnergyDeposition.png` | Plot of `output_fin.dat` (PIPS, full range) |
 | `EnergyDepositionScint.png` | Plot of `output_fin_Scint.dat` (scintillator, full range) |
+| `EnergyDepositionScint_smooth.png` | Same data, smoothed with ROOT's `TH1::Smooth()` (5 passes of "353QH, twice") |
 
 ## Macro files
 
@@ -165,7 +166,11 @@ For the scintillator, the physical FWHM at 662 keV (~50 keV) is much larger than
 
 100000 Cs-137 decays via `run_cs137_scint.mac` — the broad 661.7 keV photopeak, noticeably rougher and wider than an HPGe photopeak at the same energy:
 
-![Scintillator spectrum](docs/images/spectrum_scint_cs137.png)
+| Raw | Smoothed (`EnergyDepositionScint_smooth.png`) |
+|---|---|
+| ![Scintillator spectrum](docs/images/spectrum_scint_cs137.png) | ![Scintillator spectrum smoothed](docs/images/spectrum_scint_cs137_smooth.png) |
+
+The smoothed version applies ROOT's `TH1::Smooth()` (5 passes of the "353QH, twice" algorithm — a resistant running-median smoother that tames single-channel Poisson noise without shifting the peak position or eroding its shape) purely for visualization; `output_fin_Scint.dat` itself is never modified.
 
 ## Physics list
 

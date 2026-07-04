@@ -53,6 +53,51 @@ void plotSpectrum(const char *datFile, const char *pngFile, int nBins)
 void nn() { plotSpectrum("output_fin.dat", "EnergyDeposition.png", 2048); }
 void nnScint() { plotSpectrum("output_fin_Scint.dat", "EnergyDepositionScint.png", 2048); }
 
+// Same data as plotSpectrum, but applies ROOT's built-in TH1::Smooth()
+// (the "353QH, twice" algorithm) before plotting, to tame the Poisson
+// counting noise visible in the scintillator's broad, low-statistics peak.
+// Does not touch the underlying .dat file.
+void plotSpectrumSmoothed(const char *datFile, const char *pngFile, int nBins)
+{
+    using namespace std;
+    std::vector<double> xs, ys;
+
+    fstream file;
+    file.open(datFile, ios::in);
+    while(true)
+    {
+        double x, y;
+        file >> x >> y;
+        if(file.eof()) break;
+        xs.push_back(x);
+        ys.push_back(y);
+    }
+    file.close();
+
+    if (xs.empty()) return;
+
+    TH1D *hist = new TH1D("hSmooth", "Energy Deposition Spectrum (smoothed)", nBins, -0.5, nBins - 0.5);
+    hist->SetStats(0);
+    for (size_t i = 0; i < xs.size(); ++i) {
+        hist->SetBinContent(static_cast<int>(xs[i]) + 1, ys[i]);
+    }
+    hist->Smooth(5); // "353QH, twice", applied 5 times
+
+    hist->GetXaxis()->SetTitle("Channel");
+    hist->GetXaxis()->CenterTitle();
+    hist->GetYaxis()->SetTitle("Counts");
+    hist->GetYaxis()->CenterTitle();
+
+    TCanvas *canvas = new TCanvas("canvasSmooth", "Energy Deposition Spectrum (smoothed)", 800, 600);
+    hist->Draw("HIST L");
+    canvas->Update();
+    canvas->SaveAs(pngFile);
+    delete canvas;
+    delete hist;
+}
+
+void nnScintSmooth() { plotSpectrumSmoothed("output_fin_Scint.dat", "EnergyDepositionScint_smooth.png", 2048); }
+
 void csv_to_dat(){
     std::string filename = "merge.csv"; // Your file name
     // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
@@ -207,6 +252,7 @@ int main(int argc, char** argv)
     csv_to_dat();
     nn();
     nnScint();
+    nnScintSmooth();
     }
 
     //return 0;

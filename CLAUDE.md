@@ -44,7 +44,7 @@ The macro receives `{Znum}`, `{Anum}`, and `{NumberOfParticles}` as aliases set 
 After the run, `main()` automatically:
 1. Merges per-thread CSV files: `tail -n +7 -q output_nt_Scoring_t*.csv >> merge.csv` (skips the 6-line G4 CSV header — 4 fixed lines + one `#column` line per n-tuple column; currently 2 columns)
 2. Bins both energy columns into 2048-channel spectra (`csv_to_dat()`): PIPS over 3–15 MeV → `output_fin.dat`, scintillator over 0–1 MeV → `output_fin_Scint.dat`
-3. Plots both via ROOT: `nn()` → `EnergyDeposition.png`, `nnScint()` → `EnergyDepositionScint.png`
+3. Plots both via ROOT: `nn()` → `EnergyDeposition.png`, `nnScint()` → `EnergyDepositionScint.png`, plus a smoothed scintillator view `nnScintSmooth()` → `EnergyDepositionScint_smooth.png` (ROOT's `TH1::Smooth()`, 5 passes of "353QH, twice" — visualization only, does not touch `output_fin_Scint.dat`)
 
 **Note:** `main()` calls `system("rm *.png *.dat *.csv")` at startup — all previous output is wiped each run.
 

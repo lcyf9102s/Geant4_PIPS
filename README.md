@@ -88,10 +88,11 @@ Example — 100000 Cs-137 decays aimed at the HPGe crystal:
 | `merge.csv` | Merged n-tuple from all threads |
 | `output.dat` | Per-run PIPS histogram from `MyRunAction` — **broken under MT** (see Known issues) |
 | `output_fin.dat` | Final PIPS spectrum after electronics broadening, 2048 channels over 3–15 MeV |
-| `output_fin_HPGe.dat` | Final HPGe spectrum after electronics broadening, 4096 channels over 0–1 MeV |
+| `output_fin_HPGe.dat` | Final HPGe spectrum after electronics broadening, 4096 channels over 0–3 MeV |
 | `total_energy.dat` | Total deposited energy and kerma in the PIPS scoring volume |
 | `EnergyDeposition.png` | Plot of `output_fin.dat` (PIPS, full range) |
-| `EnergyDepositionHPGe.png` | Plot of `output_fin_HPGe.dat` (HPGe, full range) |
+| `EnergyDepositionHPGe.png` | Plot of `output_fin_HPGe.dat` (HPGe, full range, linear y-axis) |
+| `EnergyDepositionHPGe_log.png` | Same HPGe data, log y-axis (matches how published background spectra are usually shown) |
 | `EnergyDepositionHPGe_peak.png` | Same HPGe data, auto-zoomed ±40 channels around the tallest peak |
 
 ## Macro files
@@ -106,6 +107,7 @@ Example — 100000 Cs-137 decays aimed at the HPGe crystal:
 | `run3_12.mac` | z = −11 mm | 12 spot sources | Sources outside Am geometry — alphas blocked |
 | `run_hpge_gamma.mac` | z = −1.5 mm | 3 mm | Direct 59.5 keV gamma source aimed at HPGe, bypassing decay physics — for validating HPGe geometry/scoring in isolation |
 | `run_cs137_hpge.mac` | z = +50 mm | 3 mm | Cs-137 ion source aimed at HPGe; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
+| `run_hpge_background.mac` | z = +50 mm | 3 mm | Illustrative "shield background" spectrum: one gamma source emitting a discrete mix of ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation) via `/gps/ene/type Arb`, weighted by approximate photon yield. See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -162,11 +164,25 @@ Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
 As `FWHM_noise` increases, the alpha peak flattens and broadens while the total event count is conserved.
 
-For HPGe, the physical FWHM at typical gamma energies (~1–2 keV) is small relative to the full 0–1 MeV / 4096-channel range, so the full-spectrum plot renders the peak as a sliver. `EnergyDepositionHPGe_peak.png` auto-zooms ±40 channels around the tallest bin to make the Gaussian shape visible, without altering the underlying data:
+For HPGe, the physical FWHM at typical gamma energies (~1–2 keV) is small relative to the full 0–3 MeV / 4096-channel range, so the full-spectrum plot renders the peak as a sliver. `EnergyDepositionHPGe_peak.png` auto-zooms ±40 channels around the tallest bin to make the Gaussian shape visible, without altering the underlying data:
+
+> **Note:** the range was widened back from 0–1 MeV to 0–3 MeV on this branch to fit `run_hpge_background.mac`'s lines up to 2.6 MeV (see below); this diverges from `feature/hpge-detector`, where it's 0–1 MeV.
 
 100000 Cs-137 decays via `run_cs137_hpge.mac` — the 661.7 keV photopeak:
 
 ![HPGe peak zoom](docs/images/spectrum_hpge_cs137_peak.png)
+
+## Background spectrum approximation
+
+`run_hpge_background.mac` illustrates a shielded HPGe "background" spectrum — the kind published in low-background/rare-event-search papers, showing many discrete natural-radioactivity lines superimposed on a falling continuum. It does **not** model the actual physical origin of that continuum (trace U/Th/K activity in shield materials, cosmic-ray-induced background) — that would need activation physics and a muon shower generator this project doesn't implement. Instead, a single `/gps/ene/type Arb` source emits a discrete mix of ~16 of the most prominent natural background lines (Pb-212/Pb-214/Bi-214/Ac-228/Tl-208 from the U-238 and Th-232 decay chains, K-40, and 511 keV annihilation), weighted by approximate photon yield per 100 decays. The falling Compton-continuum shape emerges "for free" from each line's own partial-energy-deposit tail in the HPGe crystal — with 16 lines spread from 239 keV to 2.6 MeV, their continua stack into a quasi-continuous background, just as in a real spectrum.
+
+20 million events via `run_hpge_background.mac`, plotted with `nnHPGeLog()` (log y-axis, matching how published background spectra are usually shown) and the standard linear `nnHPGe()`:
+
+| Log scale (`EnergyDepositionHPGe_log.png`) | Linear scale (`EnergyDepositionHPGe.png`) |
+|---|---|
+| ![Background spectrum log](docs/images/spectrum_hpge_background_log.png) | ![Background spectrum linear](docs/images/spectrum_hpge_background_linear.png) |
+
+Sharp lines are visible at the low-energy end (Pb-212 238.6 keV, Pb-214 351.9 keV, Bi-214 609.3 keV); higher-energy lines are progressively harder to resolve against the accumulated continuum from everything above them — the same effect seen in real background spectra, where a line's visibility depends on how much higher-energy activity is also present.
 
 ## Physics list
 

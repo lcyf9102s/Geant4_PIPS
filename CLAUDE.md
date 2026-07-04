@@ -44,7 +44,9 @@ The macro receives `{Znum}`, `{Anum}`, and `{NumberOfParticles}` as aliases set 
 After the run, `main()` automatically:
 1. Merges per-thread CSV files: `tail -n +7 -q output_nt_Scoring_t*.csv >> merge.csv` (skips the 6-line G4 CSV header — 4 fixed lines + one `#column` line per n-tuple column; currently 2 columns)
 2. Bins both energy columns into 2048-channel spectra (`csv_to_dat()`): PIPS over 3–15 MeV → `output_fin.dat`, HPGe over 0–3 MeV → `output_fin_HPGe.dat`
-3. Plots both via ROOT (`nn()` → `EnergyDeposition.png`, `nnHPGe()` → `EnergyDepositionHPGe.png`)
+3. Plots both via ROOT (`nn()` → `EnergyDeposition.png`, `nnHPGe()` → `EnergyDepositionHPGe.png`, `nnHPGeLog()` → `EnergyDepositionHPGe_log.png`, `nnHPGeZoom()` → `EnergyDepositionHPGe_peak.png`)
+
+**Note:** the HPGe range was widened from 0–1 MeV back to 0–3 MeV on this branch (`maxEnergyHPGe` in `csv_to_dat()`) to fit `run_hpge_background.mac`'s lines up to 2.6 MeV — diverges from `feature/hpge-detector`, where it's 0–1 MeV.
 
 **Note:** `main()` calls `system("rm *.png *.dat *.csv")` at startup — all previous output is wiped each run.
 
@@ -91,7 +93,7 @@ The n-tuple is written per-thread to `output_nt_Scoring_t<N>.csv` by Geant4's an
 
 ### Physics list (physics.cc)
 
-Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`, `G4RadioactiveDecayPhysics`. Radioactive decay time threshold set to 200 days in `main()`.
+Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`, `G4RadioactiveDecayPhysics`. Radioactive decay time threshold set to 1000 years in `main()` (see the Fixed bug note above).
 
 ### Macro files
 
@@ -104,6 +106,7 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run2.mac` | Alternative configuration |
 | `run_hpge_gamma.mac` | Direct 59.5 keV gamma source aimed at the HPGe crystal, bypassing ion/decay physics — for validating HPGe geometry/scoring in isolation |
 | `run_cs137_hpge.mac` | Cs-137 ion source (z=+50 mm) aimed at HPGe; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
+| `run_hpge_background.mac` | Illustrative shielded-HPGe background: one `/gps/ene/type Arb` gamma source emitting ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation), weighted by approximate photon yield. Falling continuum emerges from each line's own Compton tail, not a separate modeled source |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |
 

@@ -53,6 +53,44 @@ void plotSpectrum(const char *datFile, const char *pngFile, int nBins)
 void nn() { plotSpectrum("output_fin.dat", "EnergyDeposition.png", 2048); }
 void nnHPGe() { plotSpectrum("output_fin_HPGe.dat", "EnergyDepositionHPGe.png", 4096); }
 
+// Same data as plotSpectrum, but with a log-scale y-axis, matching how
+// published background spectra (wide dynamic range: tall low-energy peaks,
+// small high-energy ones) are usually displayed.
+void plotSpectrumLog(const char *datFile, const char *pngFile, int nBins)
+{
+    using namespace std;
+    TGraph *graph = new TGraph();
+    graph->SetMarkerStyle(kFullCircle);
+
+    fstream file;
+    file.open(datFile, ios::in);
+
+    while(true)
+    {
+        double x, y;
+        file >> x >> y;
+        graph->SetPoint(graph->GetN(), x, y);
+        if(file.eof()) break;
+    }
+    file.close();
+
+    graph->GetXaxis()->SetTitle("Channel");
+    graph->GetXaxis()->CenterTitle();
+    graph->GetYaxis()->SetTitle("Counts");
+    graph->GetYaxis()->CenterTitle();
+
+    TCanvas *canvas = new TCanvas("canvasLog", "Energy Deposition Spectrum (log)", 800, 600);
+    canvas->SetLogy();
+    graph->Draw("AL");
+
+    graph->GetXaxis()->SetRangeUser(0, nBins - 1);
+    canvas->Update();
+    canvas->SaveAs(pngFile);
+    delete canvas;
+}
+
+void nnHPGeLog() { plotSpectrumLog("output_fin_HPGe.dat", "EnergyDepositionHPGe_log.png", 4096); }
+
 // Same data as plotSpectrum, but auto-zooms the x-axis onto the tallest peak
 // (+/- windowHalfWidth channels) so the Gaussian broadening is visible instead
 // of being compressed into a sliver of the full spectrum range.
@@ -107,10 +145,11 @@ void nnHPGeZoom() { plotSpectrumZoom("output_fin_HPGe.dat", "EnergyDepositionHPG
 void csv_to_dat(){
     std::string filename = "merge.csv"; // Your file name
     // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
-    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-1 MeV, 4096 channels.
+    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-3 MeV, 4096 channels.
+    // (Widened from 0-1 MeV so the background macro's lines up to 2.6 MeV fit.)
     const int nBinsPIPS = 2048;
     const int nBinsHPGe = 4096;
-    const double maxEnergyHPGe = 1.0; // MeV
+    const double maxEnergyHPGe = 3.0; // MeV
     std::vector<G4double> MCHist(nBinsPIPS, 0.0);
     std::vector<G4double> MCHistHPGe(nBinsHPGe, 0.0);
 
@@ -259,6 +298,7 @@ int main(int argc, char** argv)
     csv_to_dat();
     nn();
     nnHPGe();
+    nnHPGeLog();
     nnHPGeZoom();
     }
 

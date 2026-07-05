@@ -91,7 +91,7 @@ The n-tuple is written per-thread to `output_nt_Scoring_t<N>.csv` by Geant4's an
 
 ### Physics list (physics.cc)
 
-Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`, `G4RadioactiveDecayPhysics`. Radioactive decay time threshold set to 200 days in `main()`.
+Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`, `G4RadioactiveDecayPhysics`. Radioactive decay time threshold set to 1000 years in `main()` (see the Fixed bug note above).
 
 ### Macro files
 

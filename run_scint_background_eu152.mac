@@ -1,0 +1,60 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Same illustrative natural background line mix as run_scint_background.mac,
+# plus a real Eu-152 decay source layered on top via GPS multi-source -- e.g.
+# an Eu-152 efficiency-calibration source being measured with ambient
+# background still present, mirroring the HPGe branch's
+# run_hpge_background_eu152.mac. Each event draws from exactly one of the
+# two sources (default /gps/source/multiplevertex false), weighted by the
+# intensities below: background=1, Eu-152=4.
+#
+# Eu-152 (T half-life = 13.5 y) uses real decay physics (ion source), not
+# Arb lines: EC (72.1%) to Sm-152 and beta- (27.9%) to Gd-152 produce ~12
+# significant gamma lines from 122 to 1408 keV. Unlike HPGe, where each line
+# resolves individually, NaI(Tl)'s poorer resolution (~11.5% at 662 keV,
+# ORTEC-calibrated) blurs the Eu-152 lines and the background lines alike
+# into broader features -- expected physics, not an artifact.
+
+# Source 0: natural background line mix
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/gps/ene/type Arb
+/gps/hist/type arb
+#-------- E (MeV) -- relative yield (~photons per 100 decays) -- isotope (chain)
+/gps/hist/point 0.23863  43.3   # Pb-212 (Th)
+/gps/hist/point 0.29522  18.5   # Pb-214 (U)
+/gps/hist/point 0.33832  11.3   # Ac-228 (Th)
+/gps/hist/point 0.35193  35.1   # Pb-214 (U)
+/gps/hist/point 0.511    20.0   # e+e- annihilation
+/gps/hist/point 0.58319  30.6   # Tl-208 (Th)
+/gps/hist/point 0.60931  44.6   # Bi-214 (U)
+/gps/hist/point 0.9112   25.8   # Ac-228 (Th)
+/gps/hist/point 0.969    15.8   # Ac-228 (Th)
+/gps/hist/point 1.12029  14.7   # Bi-214 (U)
+/gps/hist/point 1.23811   5.79  # Bi-214 (U)
+/gps/hist/point 1.37767   3.90  # Bi-214 (U)
+/gps/hist/point 1.46082  10.66  # K-40
+/gps/hist/point 1.76449  15.1   # Bi-214 (U)
+/gps/hist/point 2.2041    4.91  # Bi-214 (U)
+/gps/hist/point 2.61451  35.85  # Tl-208 (Th)
+/gps/hist/inter Lin
+
+# Source 1: real Eu-152 decay
+/gps/source/add 4
+/gps/particle ion
+/gps/ion 63 152
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

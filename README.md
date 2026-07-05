@@ -106,6 +106,8 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `run3_12.mac` | z = −11 mm | 12 spot sources | Sources outside Am geometry — alphas blocked |
 | `run_cs137_scint.mac` | z = +50 mm | 3 mm | Cs-137 ion source aimed at the scintillator; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
 | `run_scint_background.mac` | z = +50 mm | 3 mm | Illustrative "shield background" spectrum: one gamma source emitting a discrete mix of ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation) via `/gps/ene/type Arb`, weighted by approximate photon yield. See below |
+| `run_eu152_scint.mac` | z = +50 mm | 3 mm | Eu-152 ion source aimed at the scintillator (real decay physics); ~12 significant gamma lines from 122–1408 keV, blurred by NaI(Tl)'s poor resolution into overlapping broad humps rather than resolving individually. See below |
+| `run_scint_background_eu152.mac` | z = +50 mm | 3 mm | `run_scint_background.mac`'s line mix plus a real Eu-152 decay source (GPS multi-source, relative intensity 1:4). See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -185,6 +187,20 @@ The smoothed version applies ROOT's `TH1::Smooth()` (5 passes of the "353QH, twi
 | ![Scintillator background log](docs/images/spectrum_scint_background_log.png) | ![Scintillator background linear](docs/images/spectrum_scint_background_linear.png) |
 
 Unlike the HPGe version, where each line resolves as a distinct sharp peak, NaI(Tl)'s much poorer resolution (11.5% vs ~0.1-0.3% at 662 keV) blurs neighboring lines into a few broad humps instead — visible here as two overlapping bumps in the 200-450 keV region (from the Pb-212/Pb-214/Ac-228/annihilation/Tl-208/Bi-214 cluster) and one broad hump near 1700 keV (from the higher-energy Bi-214/K-40 lines), rather than the ~16 individually resolved peaks HPGe shows for the identical source. This is real, expected physics — not a simulation artifact — and is the same resolution-vs-efficiency tradeoff discussed when the scintillator branch was first compared against HPGe.
+
+### Adding an Eu-152 source
+
+`run_eu152_scint.mac` uses real Eu-152 decay physics (`/gps/ion 63 152`), mirroring the HPGe branch's `run_eu152_hpge.mac` — EC (72.1%) to Sm-152 and beta- (27.9%) to Gd-152, producing ~12 significant gamma lines from 122 to 1408 keV.
+
+2,000,000 events via `run_eu152_scint.mac` (isolated) — where HPGe resolved all 12 lines individually, NaI(Tl) blurs them into a series of overlapping humps (122/245/344 keV cluster, 779/867/964/1086/1112 keV cluster, 1213/1299/1408 keV cluster):
+
+![Eu-152 spectrum isolated (scintillator)](docs/images/spectrum_scint_eu152_isolated.png)
+
+`run_scint_background_eu152.mac` layers this on the same natural background line mix (relative intensity 1:4, background:Eu-152). 20,000,000 events:
+
+![Background plus Eu-152 (scintillator)](docs/images/spectrum_scint_background_eu152_log.png)
+
+The Eu-152 hump structure dominates the low-to-mid energy range, with the background's own higher-energy line cluster (Bi-214/Tl-208, up to 2614 keV) still visible past ~1500 keV since Eu-152 has no lines above 1408 keV.
 
 ## Physics list
 

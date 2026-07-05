@@ -110,6 +110,8 @@ Example — 100000 Cs-137 decays aimed at the HPGe crystal:
 | `run_hpge_background.mac` | z = +50 mm | 3 mm | Illustrative "shield background" spectrum: one gamma source emitting a discrete mix of ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation) via `/gps/ene/type Arb`, weighted by approximate photon yield. See below |
 | `run_co60_hpge.mac` | z = +50 mm | 3 mm | Co-60 ion source aimed at HPGe (real decay physics); the 1173.2/1332.5 keV cascade shows up with the classic ~2505.7 keV coincidence sum peak. See below |
 | `run_hpge_background_co60.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Co-60 decay source (GPS multi-source, relative intensity 1:4) — e.g. a Co-60 check source measured with ambient background present. See below |
+| `run_eu152_hpge.mac` | z = +50 mm | 3 mm | Eu-152 ion source aimed at HPGe (real decay physics); ~12 significant gamma lines from 122–1408 keV, the classic multi-line HPGe efficiency-calibration source. See below |
+| `run_hpge_background_eu152.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Eu-152 decay source (GPS multi-source, relative intensity 1:4). See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -199,6 +201,20 @@ Sharp lines are visible at the low-energy end (Pb-212 238.6 keV, Pb-214 351.9 ke
 ![Background plus Co-60](docs/images/spectrum_hpge_background_co60_log.png)
 
 The Co-60 doublet now towers ~2 orders of magnitude above the background continuum (as a strong calibration source would), while the natural background lines remain visible underneath, and the sum peak is still distinguishable near the high-energy end, just below the background's own Tl-208 2614 keV line.
+
+### Adding an Eu-152 source
+
+`run_eu152_hpge.mac` uses real Eu-152 decay physics (`/gps/ion 63 152`) the same way — Eu-152 decays via EC (72.1%) to Sm-152 and beta- (27.9%) to Gd-152, producing ~12 significant gamma lines from 122 to 1408 keV. It's the classic multi-line source used to calibrate HPGe detector efficiency across a wide energy range, precisely because it has so many well-characterized lines in one measurement.
+
+2,000,000 events via `run_eu152_hpge.mac` (isolated) — all 12 expected lines present with peak-to-baseline ratios from ~5x up to ~800x:
+
+![Eu-152 spectrum isolated](docs/images/spectrum_hpge_eu152_isolated.png)
+
+`run_hpge_background_eu152.mac` layers this on the same natural background line mix (relative intensity 1:4, background:Eu-152). 20,000,000 events:
+
+![Background plus Eu-152](docs/images/spectrum_hpge_background_eu152_log.png)
+
+The Eu-152 "forest of lines" stands clearly above the background continuum across the full range, with the background's own Tl-208 2614 keV line still visible marking the spectrum's high-energy end (Eu-152's own lines don't reach that far).
 
 ## Physics list
 

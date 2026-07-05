@@ -109,6 +109,8 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run_hpge_background.mac` | Illustrative shielded-HPGe background: one `/gps/ene/type Arb` gamma source emitting ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation), weighted by approximate photon yield. Falling continuum emerges from each line's own Compton tail, not a separate modeled source |
 | `run_co60_hpge.mac` | Co-60 ion source (z=+50 mm), real decay physics — both cascade gammas (1173.2/1332.5 keV) tracked in the same event, reproducing the ~2505.7 keV coincidence sum peak, which an Arb-histogram line can't (one photon per event) |
 | `run_hpge_background_co60.mac` | `run_hpge_background.mac`'s line source plus a real Co-60 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
+| `run_eu152_hpge.mac` | Eu-152 ion source (z=+50 mm), real decay physics — ~12 significant gamma lines from 122-1408 keV (EC to Sm-152 72.1%, beta- to Gd-152 27.9%), the classic multi-line HPGe efficiency-calibration source |
+| `run_hpge_background_eu152.mac` | `run_hpge_background.mac`'s line source plus a real Eu-152 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |
 

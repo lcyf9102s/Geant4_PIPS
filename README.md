@@ -11,7 +11,8 @@ Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) de
 - Multi-threaded simulation (16 threads via Geant4 MT)
 - Automatic post-processing: per-thread CSV merge → binned spectra → PNG plots, for both PIPS and HPGe
 - Electronics broadening model per detector: Gaussian smearing with Fano noise + configurable electronics noise FWHM (HPGe calibrated to published ORTEC GEM40 specs)
-- Auto-zoomed peak plot for HPGe to visualize Gaussian broadening at a glance
+- Auto-zoomed and log-scale HPGe plots, for viewing narrow peaks and wide-dynamic-range spectra
+- Illustrative natural-background spectrum (Arb-histogram line mix), with real Co-60/Eu-152/Cs-137 decay sources layerable on top via GPS multi-source
 
 ## Dependencies
 
@@ -189,41 +190,25 @@ For HPGe, the physical FWHM at typical gamma energies (~1–2 keV) is small rela
 
 Sharp lines are visible at the low-energy end (Pb-212 238.6 keV, Pb-214 351.9 keV, Bi-214 609.3 keV); higher-energy lines are progressively harder to resolve against the accumulated continuum from everything above them — the same effect seen in real background spectra, where a line's visibility depends on how much higher-energy activity is also present.
 
-### Adding a Co-60 source
+### Layering calibration sources on the background
 
-`run_co60_hpge.mac` layers a genuine Co-60 decay on top: unlike the background lines (each an independent `/gps/ene/type Arb` draw, one photon per event), Co-60 is simulated as a real ion source (`/gps/ion 27 60`), so both cascade photons (1173.2 and 1332.5 keV, near-100% coincident) are tracked within the same event. This reproduces a real, well-known feature that the Arb-histogram approach cannot: the **~2505.7 keV coincidence sum peak**, seen when both photons deposit their full energy in the same event.
+Three real ion-decay sources (not Arb-histogram lines — see below) can each be layered on the background line mix via GPS multi-source (`/gps/source/add 4`, background weight 1), approximating a check source measured with ambient background present. Each uses real decay physics rather than an approximated energy line, so genuinely cascading transitions are tracked within the same event — this matters for Co-60 specifically (see below).
 
-2,000,000 events via `run_co60_hpge.mac` (isolated, no background mixed in) — the 1173/1332 keV doublet plus the small sum peak just below 2506 keV:
+| Source | Isolated macro | Layered-on-background macro | What it demonstrates |
+|---|---|---|---|
+| Co-60 (1173.2/1332.5 keV) | `run_co60_hpge.mac` | `run_hpge_background_co60.mac` | The **~2505.7 keV coincidence sum peak**: both cascade photons land in the same event, so their energies sum when both fully deposit — a feature an Arb-histogram line (one photon per event) structurally can't reproduce |
+| Eu-152 (~12 lines, 122–1408 keV) | `run_eu152_hpge.mac` | `run_hpge_background_eu152.mac` | The classic multi-line HPGe efficiency-calibration source: all 12 lines resolve individually (peak-to-baseline ratios ~5x–800x), spanning a wide energy range in one measurement |
+| Cs-137 (661.7 keV) | `run_cs137_hpge.mac` | `run_hpge_background_cs137.mac` | The Ba K-shell X-ray peak (~32–37 keV) from internal conversion, visible alongside the main photopeak |
 
-![Co-60 spectrum isolated](docs/images/spectrum_hpge_co60_isolated.png)
+Each isolated run used 2,000,000 events; each layered-on-background run used 20,000,000. In every case the source's own lines dominate ~2 orders of magnitude above the background continuum, the background's natural lines remain visible underneath, and the background's own Tl-208 2614 keV line still marks the high-energy endpoint (none of these three sources emits above that energy):
 
-`run_hpge_background_co60.mac` combines both: the background line mix (as above) plus the same real Co-60 decay source, via GPS multi-source (`/gps/source/add`) at relative intensity 1:4 — approximating a Co-60 check source being measured with ambient background still present. 20,000,000 events:
+| Co-60 isolated | Eu-152 isolated |
+|---|---|
+| ![Co-60 spectrum isolated](docs/images/spectrum_hpge_co60_isolated.png) | ![Eu-152 spectrum isolated](docs/images/spectrum_hpge_eu152_isolated.png) |
 
-![Background plus Co-60](docs/images/spectrum_hpge_background_co60_log.png)
-
-The Co-60 doublet now towers ~2 orders of magnitude above the background continuum (as a strong calibration source would), while the natural background lines remain visible underneath, and the sum peak is still distinguishable near the high-energy end, just below the background's own Tl-208 2614 keV line.
-
-### Adding an Eu-152 source
-
-`run_eu152_hpge.mac` uses real Eu-152 decay physics (`/gps/ion 63 152`) the same way — Eu-152 decays via EC (72.1%) to Sm-152 and beta- (27.9%) to Gd-152, producing ~12 significant gamma lines from 122 to 1408 keV. It's the classic multi-line source used to calibrate HPGe detector efficiency across a wide energy range, precisely because it has so many well-characterized lines in one measurement.
-
-2,000,000 events via `run_eu152_hpge.mac` (isolated) — all 12 expected lines present with peak-to-baseline ratios from ~5x up to ~800x:
-
-![Eu-152 spectrum isolated](docs/images/spectrum_hpge_eu152_isolated.png)
-
-`run_hpge_background_eu152.mac` layers this on the same natural background line mix (relative intensity 1:4, background:Eu-152). 20,000,000 events:
-
-![Background plus Eu-152](docs/images/spectrum_hpge_background_eu152_log.png)
-
-The Eu-152 "forest of lines" stands clearly above the background continuum across the full range, with the background's own Tl-208 2614 keV line still visible marking the spectrum's high-energy end (Eu-152's own lines don't reach that far).
-
-### Adding a Cs-137 source
-
-`run_hpge_background_cs137.mac` layers the real Cs-137 decay from `run_cs137_hpge.mac` (see the Electronics broadening section above) on the same natural background line mix (relative intensity 1:4, background:Cs-137). 20,000,000 events:
-
-![Background plus Cs-137](docs/images/spectrum_hpge_background_cs137_log.png)
-
-The 661.7 keV photopeak dominates ~2 orders of magnitude above the continuum, the Ba K-shell X-ray peak (~32-37 keV, from internal conversion) is visible at the low-energy end alongside the background's own lines, and the background's Tl-208 2614 keV line still marks the high-energy endpoint.
+| Co-60 + background | Eu-152 + background | Cs-137 + background |
+|---|---|---|
+| ![Background plus Co-60](docs/images/spectrum_hpge_background_co60_log.png) | ![Background plus Eu-152](docs/images/spectrum_hpge_background_eu152_log.png) | ![Background plus Cs-137](docs/images/spectrum_hpge_background_cs137_log.png) |
 
 ## Physics list
 

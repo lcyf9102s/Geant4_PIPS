@@ -107,6 +107,8 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run_hpge_gamma.mac` | Direct 59.5 keV gamma source aimed at the HPGe crystal, bypassing ion/decay physics — for validating HPGe geometry/scoring in isolation |
 | `run_cs137_hpge.mac` | Cs-137 ion source (z=+50 mm) aimed at HPGe; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
 | `run_hpge_background.mac` | Illustrative shielded-HPGe background: one `/gps/ene/type Arb` gamma source emitting ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation), weighted by approximate photon yield. Falling continuum emerges from each line's own Compton tail, not a separate modeled source |
+| `run_co60_hpge.mac` | Co-60 ion source (z=+50 mm), real decay physics — both cascade gammas (1173.2/1332.5 keV) tracked in the same event, reproducing the ~2505.7 keV coincidence sum peak, which an Arb-histogram line can't (one photon per event) |
+| `run_hpge_background_co60.mac` | `run_hpge_background.mac`'s line source plus a real Co-60 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |
 

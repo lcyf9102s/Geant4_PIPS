@@ -108,6 +108,8 @@ Example — 100000 Cs-137 decays aimed at the HPGe crystal:
 | `run_hpge_gamma.mac` | z = −1.5 mm | 3 mm | Direct 59.5 keV gamma source aimed at HPGe, bypassing decay physics — for validating HPGe geometry/scoring in isolation |
 | `run_cs137_hpge.mac` | z = +50 mm | 3 mm | Cs-137 ion source aimed at HPGe; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
 | `run_hpge_background.mac` | z = +50 mm | 3 mm | Illustrative "shield background" spectrum: one gamma source emitting a discrete mix of ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation) via `/gps/ene/type Arb`, weighted by approximate photon yield. See below |
+| `run_co60_hpge.mac` | z = +50 mm | 3 mm | Co-60 ion source aimed at HPGe (real decay physics); the 1173.2/1332.5 keV cascade shows up with the classic ~2505.7 keV coincidence sum peak. See below |
+| `run_hpge_background_co60.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Co-60 decay source (GPS multi-source, relative intensity 1:4) — e.g. a Co-60 check source measured with ambient background present. See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -183,6 +185,20 @@ For HPGe, the physical FWHM at typical gamma energies (~1–2 keV) is small rela
 | ![Background spectrum log](docs/images/spectrum_hpge_background_log.png) | ![Background spectrum linear](docs/images/spectrum_hpge_background_linear.png) |
 
 Sharp lines are visible at the low-energy end (Pb-212 238.6 keV, Pb-214 351.9 keV, Bi-214 609.3 keV); higher-energy lines are progressively harder to resolve against the accumulated continuum from everything above them — the same effect seen in real background spectra, where a line's visibility depends on how much higher-energy activity is also present.
+
+### Adding a Co-60 source
+
+`run_co60_hpge.mac` layers a genuine Co-60 decay on top: unlike the background lines (each an independent `/gps/ene/type Arb` draw, one photon per event), Co-60 is simulated as a real ion source (`/gps/ion 27 60`), so both cascade photons (1173.2 and 1332.5 keV, near-100% coincident) are tracked within the same event. This reproduces a real, well-known feature that the Arb-histogram approach cannot: the **~2505.7 keV coincidence sum peak**, seen when both photons deposit their full energy in the same event.
+
+2,000,000 events via `run_co60_hpge.mac` (isolated, no background mixed in) — the 1173/1332 keV doublet plus the small sum peak just below 2506 keV:
+
+![Co-60 spectrum isolated](docs/images/spectrum_hpge_co60_isolated.png)
+
+`run_hpge_background_co60.mac` combines both: the background line mix (as above) plus the same real Co-60 decay source, via GPS multi-source (`/gps/source/add`) at relative intensity 1:4 — approximating a Co-60 check source being measured with ambient background still present. 20,000,000 events:
+
+![Background plus Co-60](docs/images/spectrum_hpge_background_co60_log.png)
+
+The Co-60 doublet now towers ~2 orders of magnitude above the background continuum (as a strong calibration source would), while the natural background lines remain visible underneath, and the sum peak is still distinguishable near the high-energy end, just below the background's own Tl-208 2614 keV line.
 
 ## Physics list
 

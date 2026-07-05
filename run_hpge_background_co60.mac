@@ -1,0 +1,58 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Same illustrative natural background line mix as run_hpge_background.mac,
+# plus a real Co-60 decay source layered on top via GPS multi-source -- e.g.
+# a Co-60 calibration/check source being measured with ambient background
+# still present, a common real scenario. Each event draws from exactly one
+# of the two sources (default /gps/source/multiplevertex false), weighted by
+# the intensities below: background=1, Co-60=4, so the 1173.2/1332.5 keV
+# doublet dominates while the background lines remain visible underneath.
+#
+# Co-60 uses real decay physics (ion source), not another Arb line, so both
+# cascade photons are tracked in the same event -- this reproduces the
+# ~2505.7 keV coincidence sum peak seen in real Co-60 spectra (see
+# run_co60_hpge.mac for an isolated, higher-statistics look at this).
+
+# Source 0: natural background line mix
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/gps/ene/type Arb
+/gps/hist/type arb
+#-------- E (MeV) -- relative yield (~photons per 100 decays) -- isotope (chain)
+/gps/hist/point 0.23863  43.3   # Pb-212 (Th)
+/gps/hist/point 0.29522  18.5   # Pb-214 (U)
+/gps/hist/point 0.33832  11.3   # Ac-228 (Th)
+/gps/hist/point 0.35193  35.1   # Pb-214 (U)
+/gps/hist/point 0.511    20.0   # e+e- annihilation
+/gps/hist/point 0.58319  30.6   # Tl-208 (Th)
+/gps/hist/point 0.60931  44.6   # Bi-214 (U)
+/gps/hist/point 0.9112   25.8   # Ac-228 (Th)
+/gps/hist/point 0.969    15.8   # Ac-228 (Th)
+/gps/hist/point 1.12029  14.7   # Bi-214 (U)
+/gps/hist/point 1.23811   5.79  # Bi-214 (U)
+/gps/hist/point 1.37767   3.90  # Bi-214 (U)
+/gps/hist/point 1.46082  10.66  # K-40
+/gps/hist/point 1.76449  15.1   # Bi-214 (U)
+/gps/hist/point 2.2041    4.91  # Bi-214 (U)
+/gps/hist/point 2.61451  35.85  # Tl-208 (Th)
+/gps/hist/inter Lin
+
+# Source 1: real Co-60 decay
+/gps/source/add 4
+/gps/particle ion
+/gps/ion 27 60
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

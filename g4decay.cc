@@ -53,6 +53,44 @@ void plotSpectrum(const char *datFile, const char *pngFile, int nBins)
 void nn() { plotSpectrum("output_fin.dat", "EnergyDeposition.png", 2048); }
 void nnScint() { plotSpectrum("output_fin_Scint.dat", "EnergyDepositionScint.png", 2048); }
 
+// Same data as plotSpectrum, but with a log-scale y-axis, matching how
+// published background spectra (wide dynamic range: tall low-energy peaks,
+// small high-energy ones) are usually displayed.
+void plotSpectrumLog(const char *datFile, const char *pngFile, int nBins)
+{
+    using namespace std;
+    TGraph *graph = new TGraph();
+    graph->SetMarkerStyle(kFullCircle);
+
+    fstream file;
+    file.open(datFile, ios::in);
+
+    while(true)
+    {
+        double x, y;
+        file >> x >> y;
+        graph->SetPoint(graph->GetN(), x, y);
+        if(file.eof()) break;
+    }
+    file.close();
+
+    graph->GetXaxis()->SetTitle("Channel");
+    graph->GetXaxis()->CenterTitle();
+    graph->GetYaxis()->SetTitle("Counts");
+    graph->GetYaxis()->CenterTitle();
+
+    TCanvas *canvas = new TCanvas("canvasLog", "Energy Deposition Spectrum (log)", 800, 600);
+    canvas->SetLogy();
+    graph->Draw("AL");
+
+    graph->GetXaxis()->SetRangeUser(0, nBins - 1);
+    canvas->Update();
+    canvas->SaveAs(pngFile);
+    delete canvas;
+}
+
+void nnScintLog() { plotSpectrumLog("output_fin_Scint.dat", "EnergyDepositionScint_log.png", 2048); }
+
 // Same data as plotSpectrum, but applies ROOT's built-in TH1::Smooth()
 // (the "353QH, twice" algorithm) before plotting, to tame the Poisson
 // counting noise visible in the scintillator's broad, low-statistics peak.
@@ -101,10 +139,11 @@ void nnScintSmooth() { plotSpectrumSmoothed("output_fin_Scint.dat", "EnergyDepos
 void csv_to_dat(){
     std::string filename = "merge.csv"; // Your file name
     // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
-    // Column 1 (EdepScint): NaI(Tl) scintillator, any particle, binned over 0-1 MeV, 2048 channels.
+    // Column 1 (EdepScint): NaI(Tl) scintillator, any particle, binned over 0-3 MeV, 2048 channels.
+    // (Widened from 0-1 MeV so the background macro's lines up to 2.6 MeV fit.)
     const int nBinsPIPS = 2048;
     const int nBinsScint = 2048;
-    const double maxEnergyScint = 1.0; // MeV
+    const double maxEnergyScint = 3.0; // MeV
     std::vector<G4double> MCHist(nBinsPIPS, 0.0);
     std::vector<G4double> MCHistScint(nBinsScint, 0.0);
 
@@ -115,9 +154,13 @@ void csv_to_dat(){
     const double eps_si     = 3.62e-6; // MeV per e-h pair in Si
 
     // NaI(Tl) resolution: photon-statistics-limited scaling, FWHM(E)/E = R_662 * sqrt(662 keV / E),
-    // i.e. FWHM(E) = R_662 * sqrt(E_ref * E). Calibrated to OST Photonics' published 3"x3"
-    // NaI(Tl) spec: FWHM/E <= 7.5% at 662 keV (Cs-137) -- the industry-standard reference point.
-    const double R_662_Scint = 0.075;  // dimensionless resolution at 662 keV
+    // i.e. FWHM(E) = R_662 * sqrt(E_ref * E). ORTEC's own "Experiment 3: Gamma-Ray
+    // Spectroscopy Using NaI(Tl)" derives exactly this 1/sqrt(E) scaling law (Eq. 1) from
+    // photoelectron-counting statistics, and works a concrete example: a measured Cs-137
+    // photopeak at channel 280 with FWHM = 32 channels, giving 11.5% resolution at 662 keV
+    // (Experiment 3.4). ORTEC notes a theoretical floor of ~7.4% for a high-quality detector
+    // (~1000 photoelectrons) and a typical range of 7-10%; 11.5% is their own worked example.
+    const double R_662_Scint = 0.115;  // dimensionless resolution at 662 keV
     const double E_ref_Scint = 0.662;  // MeV
 
     // Create an input file stream object
@@ -252,6 +295,7 @@ int main(int argc, char** argv)
     csv_to_dat();
     nn();
     nnScint();
+    nnScintLog();
     nnScintSmooth();
     }
 

@@ -87,10 +87,11 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `merge.csv` | Merged n-tuple from all threads |
 | `output.dat` | Per-run PIPS histogram from `MyRunAction` — **broken under MT** (see Known issues) |
 | `output_fin.dat` | Final PIPS spectrum after electronics broadening, 2048 channels over 3–15 MeV |
-| `output_fin_Scint.dat` | Final scintillator spectrum after broadening, 2048 channels over 0–1 MeV |
+| `output_fin_Scint.dat` | Final scintillator spectrum after broadening, 2048 channels over 0–3 MeV |
 | `total_energy.dat` | Total deposited energy and kerma in the PIPS scoring volume |
 | `EnergyDeposition.png` | Plot of `output_fin.dat` (PIPS, full range) |
-| `EnergyDepositionScint.png` | Plot of `output_fin_Scint.dat` (scintillator, full range) |
+| `EnergyDepositionScint.png` | Plot of `output_fin_Scint.dat` (scintillator, full range, linear y-axis) |
+| `EnergyDepositionScint_log.png` | Same data, log y-axis (matches how published background spectra are usually shown) |
 | `EnergyDepositionScint_smooth.png` | Same data, smoothed with ROOT's `TH1::Smooth()` (5 passes of "353QH, twice") |
 
 ## Macro files
@@ -104,6 +105,7 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `run3_6.mac` | z = −11 mm | 6 spot sources | Sources outside Am geometry — alphas blocked |
 | `run3_12.mac` | z = −11 mm | 12 spot sources | Sources outside Am geometry — alphas blocked |
 | `run_cs137_scint.mac` | z = +50 mm | 3 mm | Cs-137 ion source aimed at the scintillator; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
+| `run_scint_background.mac` | z = +50 mm | 3 mm | Illustrative "shield background" spectrum: one gamma source emitting a discrete mix of ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation) via `/gps/ene/type Arb`, weighted by approximate photon yield. See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -148,7 +150,7 @@ The scintillator uses a different model, since NaI(Tl) resolution is dominated b
 
 $$\mathrm{FWHM}(E) = R_{662} \cdot \sqrt{E_{ref} \cdot E}, \quad E_{ref} = 662\ \mathrm{keV}$$
 
-`R_662 = 0.075` (7.5%) is calibrated to OST Photonics' published 3"x3" NaI(Tl) spec: FWHM ≤ 7.5% at 662 keV (Cs-137), the industry-standard reference point for this detector size.
+`R_662 = 0.115` (11.5%) comes from ORTEC's own "Experiment 3: Gamma-Ray Spectroscopy Using NaI(Tl)" guide, which derives this exact $1/\sqrt{E}$ scaling law from photoelectron-counting statistics and works a concrete example: a measured Cs-137 photopeak at channel 280 with FWHM = 32 channels, giving 11.5% resolution at 662 keV (Experiment 3.4). ORTEC notes a theoretical floor of ~7.4% for a high-quality detector (~1000 photoelectrons) and a typical range of 7-10%; 11.5% is their own worked example, not the best-case spec.
 
 Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
@@ -162,7 +164,7 @@ Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
 As `FWHM_noise` increases, the alpha peak flattens and broadens while the total event count is conserved.
 
-For the scintillator, the physical FWHM at 662 keV (~50 keV) is much larger than HPGe's (~1-2 keV), so the peak is visibly broad even in the full-spectrum plot:
+For the scintillator, the physical FWHM at 662 keV (~76 keV) is much larger than HPGe's (~1-2 keV), so the peak is visibly broad even in the full-spectrum plot:
 
 100000 Cs-137 decays via `run_cs137_scint.mac` — the broad 661.7 keV photopeak, noticeably rougher and wider than an HPGe photopeak at the same energy:
 
@@ -171,6 +173,18 @@ For the scintillator, the physical FWHM at 662 keV (~50 keV) is much larger than
 | ![Scintillator spectrum](docs/images/spectrum_scint_cs137.png) | ![Scintillator spectrum smoothed](docs/images/spectrum_scint_cs137_smooth.png) |
 
 The smoothed version applies ROOT's `TH1::Smooth()` (5 passes of the "353QH, twice" algorithm — a resistant running-median smoother that tames single-channel Poisson noise without shifting the peak position or eroding its shape) purely for visualization; `output_fin_Scint.dat` itself is never modified.
+
+## Background spectrum approximation
+
+`run_scint_background.mac` mirrors the HPGe branch's `run_hpge_background.mac`: a single `/gps/ene/type Arb` gamma source emits a discrete mix of the same ~16 natural background lines (Pb-212/Pb-214/Bi-214/Ac-228/Tl-208 from the U-238 and Th-232 decay chains, K-40, and 511 keV annihilation), weighted by approximate photon yield per 100 decays. It does **not** model the actual physical origin of the background continuum (trace shield-material activity, cosmic-ray-induced background) — see the HPGe branch's README for that caveat, which applies equally here.
+
+20,000,000 events via `run_scint_background.mac`, log and linear y-axis:
+
+| Log scale (`EnergyDepositionScint_log.png`) | Linear scale (`EnergyDepositionScint.png`) |
+|---|---|
+| ![Scintillator background log](docs/images/spectrum_scint_background_log.png) | ![Scintillator background linear](docs/images/spectrum_scint_background_linear.png) |
+
+Unlike the HPGe version, where each line resolves as a distinct sharp peak, NaI(Tl)'s much poorer resolution (11.5% vs ~0.1-0.3% at 662 keV) blurs neighboring lines into a few broad humps instead — visible here as two overlapping bumps in the 200-450 keV region (from the Pb-212/Pb-214/Ac-228/annihilation/Tl-208/Bi-214 cluster) and one broad hump near 1700 keV (from the higher-energy Bi-214/K-40 lines), rather than the ~16 individually resolved peaks HPGe shows for the identical source. This is real, expected physics — not a simulation artifact — and is the same resolution-vs-efficiency tradeoff discussed when the scintillator branch was first compared against HPGe.
 
 ## Physics list
 

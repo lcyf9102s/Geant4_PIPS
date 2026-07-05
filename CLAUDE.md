@@ -43,8 +43,10 @@ The macro receives `{Znum}`, `{Anum}`, and `{NumberOfParticles}` as aliases set 
 
 After the run, `main()` automatically:
 1. Merges per-thread CSV files: `tail -n +7 -q output_nt_Scoring_t*.csv >> merge.csv` (skips the 6-line G4 CSV header — 4 fixed lines + one `#column` line per n-tuple column; currently 2 columns)
-2. Bins both energy columns into 2048-channel spectra (`csv_to_dat()`): PIPS over 3–15 MeV → `output_fin.dat`, scintillator over 0–1 MeV → `output_fin_Scint.dat`
-3. Plots both via ROOT: `nn()` → `EnergyDeposition.png`, `nnScint()` → `EnergyDepositionScint.png`, plus a smoothed scintillator view `nnScintSmooth()` → `EnergyDepositionScint_smooth.png` (ROOT's `TH1::Smooth()`, 5 passes of "353QH, twice" — visualization only, does not touch `output_fin_Scint.dat`)
+2. Bins both energy columns into 2048-channel spectra (`csv_to_dat()`): PIPS over 3–15 MeV → `output_fin.dat`, scintillator over 0–3 MeV → `output_fin_Scint.dat`
+3. Plots both via ROOT: `nn()` → `EnergyDeposition.png`, `nnScint()` → `EnergyDepositionScint.png`, `nnScintLog()` → `EnergyDepositionScint_log.png`, plus a smoothed scintillator view `nnScintSmooth()` → `EnergyDepositionScint_smooth.png` (ROOT's `TH1::Smooth()`, 5 passes of "353QH, twice" — visualization only, does not touch `output_fin_Scint.dat`)
+
+**Note:** the scintillator range was widened from 0–1 MeV back to 0–3 MeV on this branch (`maxEnergyScint` in `csv_to_dat()`) to fit `run_scint_background.mac`'s lines up to 2.6 MeV — diverges from `feature/scintillator-detector`, where it's 0–1 MeV.
 
 **Note:** `main()` calls `system("rm *.png *.dat *.csv")` at startup — all previous output is wiped each run.
 
@@ -100,6 +102,7 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run3v.mac` | run3 variant |
 | `run2.mac` | Alternative configuration |
 | `run_cs137_scint.mac` | Cs-137 ion source (z=+50 mm) aimed at the scintillator; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
+| `run_scint_background.mac` | Illustrative shielded-scintillator background: one `/gps/ene/type Arb` gamma source emitting the same ~16 natural background lines as the HPGe branch's `run_hpge_background.mac`, weighted by approximate photon yield. NaI(Tl)'s poor resolution blurs neighboring lines into broad humps rather than resolving them individually |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |
 

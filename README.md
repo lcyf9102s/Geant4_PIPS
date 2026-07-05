@@ -10,7 +10,9 @@ Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) de
 - Scintillator detector: classic 3"x3" NaI(Tl) crystal in an Al housing, scored independently of PIPS
 - Multi-threaded simulation (16 threads via Geant4 MT)
 - Automatic post-processing: per-thread CSV merge → binned spectra → PNG plots, for both PIPS and the scintillator
-- Electronics/detector broadening model per detector: Gaussian smearing with Fano noise for PIPS, photon-statistics scaling law for the scintillator (calibrated to a published 3"x3" NaI(Tl) spec)
+- Electronics/detector broadening model per detector: Gaussian smearing with Fano noise for PIPS, photon-statistics scaling law for the scintillator (calibrated to ORTEC's published NaI(Tl) resolution data)
+- Log-scale scintillator plot for wide-dynamic-range spectra
+- Illustrative natural-background spectrum (Arb-histogram line mix, shared with the HPGe branch), with a real Eu-152 decay source layerable on top via GPS multi-source
 
 ## Dependencies
 

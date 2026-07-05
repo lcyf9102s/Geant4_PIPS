@@ -111,6 +111,7 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run_hpge_background_co60.mac` | `run_hpge_background.mac`'s line source plus a real Co-60 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
 | `run_eu152_hpge.mac` | Eu-152 ion source (z=+50 mm), real decay physics — ~12 significant gamma lines from 122-1408 keV (EC to Sm-152 72.1%, beta- to Gd-152 27.9%), the classic multi-line HPGe efficiency-calibration source |
 | `run_hpge_background_eu152.mac` | `run_hpge_background.mac`'s line source plus a real Eu-152 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
+| `run_hpge_background_cs137.mac` | `run_hpge_background.mac`'s line source plus a real Cs-137 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |
 

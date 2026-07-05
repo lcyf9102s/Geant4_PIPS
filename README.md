@@ -112,6 +112,7 @@ Example — 100000 Cs-137 decays aimed at the HPGe crystal:
 | `run_hpge_background_co60.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Co-60 decay source (GPS multi-source, relative intensity 1:4) — e.g. a Co-60 check source measured with ambient background present. See below |
 | `run_eu152_hpge.mac` | z = +50 mm | 3 mm | Eu-152 ion source aimed at HPGe (real decay physics); ~12 significant gamma lines from 122–1408 keV, the classic multi-line HPGe efficiency-calibration source. See below |
 | `run_hpge_background_eu152.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Eu-152 decay source (GPS multi-source, relative intensity 1:4). See below |
+| `run_hpge_background_cs137.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Cs-137 decay source (GPS multi-source, relative intensity 1:4) — e.g. a Cs-137 check source measured with ambient background present. See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -215,6 +216,14 @@ The Co-60 doublet now towers ~2 orders of magnitude above the background continu
 ![Background plus Eu-152](docs/images/spectrum_hpge_background_eu152_log.png)
 
 The Eu-152 "forest of lines" stands clearly above the background continuum across the full range, with the background's own Tl-208 2614 keV line still visible marking the spectrum's high-energy end (Eu-152's own lines don't reach that far).
+
+### Adding a Cs-137 source
+
+`run_hpge_background_cs137.mac` layers the real Cs-137 decay from `run_cs137_hpge.mac` (see the Electronics broadening section above) on the same natural background line mix (relative intensity 1:4, background:Cs-137). 20,000,000 events:
+
+![Background plus Cs-137](docs/images/spectrum_hpge_background_cs137_log.png)
+
+The 661.7 keV photopeak dominates ~2 orders of magnitude above the continuum, the Ba K-shell X-ray peak (~32-37 keV, from internal conversion) is visible at the low-energy end alongside the background's own lines, and the background's Tl-208 2614 keV line still marks the high-energy endpoint.
 
 ## Physics list
 

@@ -162,9 +162,9 @@ Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
 As `FWHM_noise` increases, the alpha peak flattens and broadens while the total event count is conserved.
 
-For the scintillator, the physical FWHM at 662 keV (~50 keV) is much larger than HPGe's (~1-2 keV), so the peak is visibly broad even in the full-spectrum plot:
+For the scintillator, the physical FWHM at 662 keV (~50 keV) is large relative to the channel range, so the peak is visibly broad even in the full-spectrum plot:
 
-100000 Cs-137 decays via `run_cs137_scint.mac` — the broad 661.7 keV photopeak, noticeably rougher and wider than an HPGe photopeak at the same energy:
+100000 Cs-137 decays via `run_cs137_scint.mac` — the broad, rough-edged 661.7 keV photopeak characteristic of NaI(Tl)'s photon-statistics-limited resolution:
 
 | Raw | Smoothed (`EnergyDepositionScint_smooth.png`) |
 |---|---|

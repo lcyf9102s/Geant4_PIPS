@@ -29,12 +29,12 @@ private:
     virtual void ConstructSDandField();
 
     G4int nCols, nRows, ncomponents;
-    G4Material *SiO2, *H2O, *Aerogel, *worldMat, *Air_0, *NaI, *HPGe, *pips, *vacuum, *steel316L, *Al_mat, *Am_mat, *icruSphereMaterial;
+    G4Material *SiO2, *H2O, *Aerogel, *worldMat, *Air_0, *NaI, *pips, *vacuum, *steel316L, *Al_mat, *Am_mat, *icruSphereMaterial;
     G4Element *C, *Na, *I;
     G4Box *solidWorld, *solidRadiator, *solidDetector, *solidVacuum, *solidwater;
-    G4Tubs *solidPIPS, *solidHPGe, *solidContainer, *solidDeadLayer, *solidAm, *solidfAm;
-    G4LogicalVolume *logicWorld, *logicRadiator, *logicDetector, *logicPIPS, *logicHPGe, *logicVacuum, *logicwater, *logicContainer, *logicDeadLayer, *logicAm, *logicfAm, *fScoringVolume;
-    G4VPhysicalVolume *physWorld, *physRadiator, *physDetector, *physPIPS, *physHPGe, *physVacuum, *physwater, *physContainer, *physDeadLayer, *physfAm, *physAm;
+    G4Tubs *solidPIPS, *solidContainer, *solidDeadLayer, *solidAm, *solidfAm;
+    G4LogicalVolume *logicWorld, *logicRadiator, *logicDetector, *logicPIPS, *logicVacuum, *logicwater, *logicContainer, *logicDeadLayer, *logicAm, *logicfAm, *fScoringVolume;
+    G4VPhysicalVolume *physWorld, *physRadiator, *physDetector, *physPIPS, *physVacuum, *physwater, *physContainer, *physDeadLayer, *physfAm, *physAm;
     G4double fractionmass, density;
 
     // NaI(Tl) scintillator: 3"x3" active crystal wrapped in a thin Al housing

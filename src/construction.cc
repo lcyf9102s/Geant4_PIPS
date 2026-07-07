@@ -40,8 +40,6 @@ void MyDetectorConstruction::DefineMaterials()
     NaI->AddElement(nist->FindOrBuildElement("Na"), 1);
     NaI->AddElement(nist->FindOrBuildElement("I"), 1);
 
-    HPGe = nist->FindOrBuildMaterial("G4_Ge");
-
     pips = nist->FindOrBuildMaterial("G4_Si");
 
     // 1. 定义元素
@@ -148,9 +146,6 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
 
     ConstructScintillator();
 
-    //solidHPGe = new G4Tubs("solidHPGe", 0.*cm, 5.*cm, 10*cm, 0*deg, 360*deg);
-    //logicHPGe = new G4LogicalVolume(solidHPGe, HPGe, "logicHPGe");
-    //physHPGe = new G4PVPlacement(0, G4ThreeVector(0., 0., 15.*cm), logicHPGe, "physHPGe", logicWorld, false, 0, true);
     G4double pRmin = 0 * mm, pRmax = 20 * mm, pDz = 2 * mm;
     G4double pSphi = 0 * deg, pDphi = 360 * deg;
     solidAm = new G4Tubs("Am-241", pRmin, pRmax, 0.5 * pDz, pSphi, pDphi);

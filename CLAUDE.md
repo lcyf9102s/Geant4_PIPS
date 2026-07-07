@@ -102,8 +102,8 @@ Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`,
 | `run3v.mac` | run3 variant |
 | `run2.mac` | Alternative configuration |
 | `run_cs137_scint.mac` | Cs-137 ion source (z=+50 mm) aimed at the scintillator; decays via Ba-137m to the 661.7 keV gamma line. No PIPS-relevant emission |
-| `run_scint_background.mac` | Illustrative shielded-scintillator background: one `/gps/ene/type Arb` gamma source emitting the same ~16 natural background lines as the HPGe branch's `run_hpge_background.mac`, weighted by approximate photon yield. NaI(Tl)'s poor resolution blurs neighboring lines into broad humps rather than resolving them individually |
-| `run_eu152_scint.mac` | Eu-152 ion source (z=+50 mm), real decay physics — ~12 significant gamma lines from 122-1408 keV, blurred by NaI(Tl)'s resolution into overlapping humps rather than the ~12 individually resolved lines HPGe shows |
+| `run_scint_background.mac` | Illustrative shielded-scintillator background: one `/gps/ene/type Arb` gamma source emitting ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation), weighted by approximate photon yield. NaI(Tl)'s poor resolution blurs neighboring lines into broad humps rather than resolving them individually |
+| `run_eu152_scint.mac` | Eu-152 ion source (z=+50 mm), real decay physics — ~12 significant gamma lines from 122-1408 keV, blurred by NaI(Tl)'s resolution into overlapping humps |
 | `run_scint_background_eu152.mac` | `run_scint_background.mac`'s line source plus a real Eu-152 decay source via GPS multi-source (`/gps/source/add 4`, background weight 1) |
 | `vis.mac` | Interactive visualization settings |
 | `vis2.mac` | Alternate visualization |

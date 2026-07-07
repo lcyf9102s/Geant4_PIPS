@@ -12,7 +12,7 @@ Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) de
 - Automatic post-processing: per-thread CSV merge → binned spectra → PNG plots, for both PIPS and the scintillator
 - Electronics/detector broadening model per detector: Gaussian smearing with Fano noise for PIPS, photon-statistics scaling law for the scintillator (calibrated to ORTEC's published NaI(Tl) resolution data)
 - Log-scale scintillator plot for wide-dynamic-range spectra
-- Illustrative natural-background spectrum (Arb-histogram line mix, shared with the HPGe branch), with a real Eu-152 decay source layerable on top via GPS multi-source
+- Illustrative natural-background spectrum (Arb-histogram line mix), with a real Eu-152 decay source layerable on top via GPS multi-source
 
 ## Dependencies
 
@@ -168,9 +168,9 @@ Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
 
 As `FWHM_noise` increases, the alpha peak flattens and broadens while the total event count is conserved.
 
-For the scintillator, the physical FWHM at 662 keV (~76 keV) is much larger than HPGe's (~1-2 keV), so the peak is visibly broad even in the full-spectrum plot:
+For the scintillator, the physical FWHM at 662 keV (~76 keV) is large relative to the channel range, so the peak is visibly broad even in the full-spectrum plot:
 
-100000 Cs-137 decays via `run_cs137_scint.mac` — the broad 661.7 keV photopeak, noticeably rougher and wider than an HPGe photopeak at the same energy:
+100000 Cs-137 decays via `run_cs137_scint.mac` — the broad, rough-edged 661.7 keV photopeak characteristic of NaI(Tl)'s photon-statistics-limited resolution:
 
 | Raw | Smoothed (`EnergyDepositionScint_smooth.png`) |
 |---|---|
@@ -180,7 +180,7 @@ The smoothed version applies ROOT's `TH1::Smooth()` (5 passes of the "353QH, twi
 
 ## Background spectrum approximation
 
-`run_scint_background.mac` mirrors the HPGe branch's `run_hpge_background.mac`: a single `/gps/ene/type Arb` gamma source emits a discrete mix of the same ~16 natural background lines (Pb-212/Pb-214/Bi-214/Ac-228/Tl-208 from the U-238 and Th-232 decay chains, K-40, and 511 keV annihilation), weighted by approximate photon yield per 100 decays. It does **not** model the actual physical origin of the background continuum (trace shield-material activity, cosmic-ray-induced background) — see the HPGe branch's README for that caveat, which applies equally here.
+`run_scint_background.mac` illustrates a shielded-scintillator "background" spectrum: a single `/gps/ene/type Arb` gamma source emits a discrete mix of ~16 natural background lines (Pb-212/Pb-214/Bi-214/Ac-228/Tl-208 from the U-238 and Th-232 decay chains, K-40, and 511 keV annihilation), weighted by approximate photon yield per 100 decays. It does **not** model the actual physical origin of the background continuum (trace shield-material activity, cosmic-ray-induced background) — that would need activation physics and a muon shower generator this project doesn't implement.
 
 20,000,000 events via `run_scint_background.mac`, log and linear y-axis:
 
@@ -188,13 +188,13 @@ The smoothed version applies ROOT's `TH1::Smooth()` (5 passes of the "353QH, twi
 |---|---|
 | ![Scintillator background log](docs/images/spectrum_scint_background_log.png) | ![Scintillator background linear](docs/images/spectrum_scint_background_linear.png) |
 
-Unlike the HPGe version, where each line resolves as a distinct sharp peak, NaI(Tl)'s much poorer resolution (11.5% vs ~0.1-0.3% at 662 keV) blurs neighboring lines into a few broad humps instead — visible here as two overlapping bumps in the 200-450 keV region (from the Pb-212/Pb-214/Ac-228/annihilation/Tl-208/Bi-214 cluster) and one broad hump near 1700 keV (from the higher-energy Bi-214/K-40 lines), rather than the ~16 individually resolved peaks HPGe shows for the identical source. This is real, expected physics — not a simulation artifact — and is the same resolution-vs-efficiency tradeoff discussed when the scintillator branch was first compared against HPGe.
+NaI(Tl)'s photon-statistics-limited resolution (11.5% at 662 keV) blurs neighboring lines together into a few broad humps rather than resolving each of the ~16 lines individually — visible here as two overlapping bumps in the 200-450 keV region (from the Pb-212/Pb-214/Ac-228/annihilation/Tl-208/Bi-214 cluster) and one broad hump near 1700 keV (from the higher-energy Bi-214/K-40 lines). This is real, expected physics, not a simulation artifact.
 
 ### Adding an Eu-152 source
 
-`run_eu152_scint.mac` uses real Eu-152 decay physics (`/gps/ion 63 152`), mirroring the HPGe branch's `run_eu152_hpge.mac` — EC (72.1%) to Sm-152 and beta- (27.9%) to Gd-152, producing ~12 significant gamma lines from 122 to 1408 keV.
+`run_eu152_scint.mac` uses real Eu-152 decay physics (`/gps/ion 63 152`) — EC (72.1%) to Sm-152 and beta- (27.9%) to Gd-152, producing ~12 significant gamma lines from 122 to 1408 keV.
 
-2,000,000 events via `run_eu152_scint.mac` (isolated) — where HPGe resolved all 12 lines individually, NaI(Tl) blurs them into a series of overlapping humps (122/245/344 keV cluster, 779/867/964/1086/1112 keV cluster, 1213/1299/1408 keV cluster):
+2,000,000 events via `run_eu152_scint.mac` (isolated) — NaI(Tl)'s resolution blurs the 12 lines into a series of overlapping humps (122/245/344 keV cluster, 779/867/964/1086/1112 keV cluster, 1213/1299/1408 keV cluster):
 
 ![Eu-152 spectrum isolated (scintillator)](docs/images/spectrum_scint_eu152_isolated.png)
 

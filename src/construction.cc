@@ -36,10 +36,6 @@ void MyDetectorConstruction::DefineMaterials()
     H2O->AddElement(nist->FindOrBuildElement("H"), 2);
     H2O->AddElement(nist->FindOrBuildElement("O"), 1);
 
-    NaI = new G4Material("NaI", 3.67*g/cm3, 2);
-    NaI->AddElement(nist->FindOrBuildElement("Na"), 1);
-    NaI->AddElement(nist->FindOrBuildElement("I"), 1);
-
     HPGe = nist->FindOrBuildMaterial("G4_Ge");
 
     pips = nist->FindOrBuildMaterial("G4_Si");
@@ -146,11 +142,6 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     logicRadiator = new G4LogicalVolume(solidRadiator, icruSphereMaterial, "logicRadiator"); // logical  radiator
     physRadiator = new G4PVPlacement(0, G4ThreeVector(0., 0., 1*m), logicRadiator, "physRadiator", logicVacuum, false, 0, true); //  physical radiator
 
-    //solidScintillator = new G4Tubs("solidScintillator", 0.*cm, 8.*cm, 10*cm, 0*deg, 360*deg);
-    //logicScintillator = new G4LogicalVolume(solidScintillator, NaI, "logicScintillator");
-    //physScintillator = new G4PVPlacement(0, G4ThreeVector(0., 0., 100.*cm), logicScintillator, "physScintillator", logicVacuum, false, 0, true);
-    
-    
     ConstructHPGe();
 
     G4double pRmin = 0 * mm, pRmax = 20 * mm, pDz = 2 * mm;
@@ -208,7 +199,6 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     solidDetector = new G4Box("solidDetector", x_world/nRows, y_world/nCols, 0.01*m); // solid detector
     logicDetector = new G4LogicalVolume(solidDetector, worldMat, "logicDetector");
 
-    //fScoringVolume = logicScintillator;
     // 探测器阵列构建，使用for循环，构建一个100x100的探测器阵列，并给每一个探测器单元编号
     for(G4int i = 0; i < nRows; i++)
     {

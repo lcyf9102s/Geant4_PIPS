@@ -29,12 +29,12 @@ private:
     virtual void ConstructSDandField();
 
     G4int nCols, nRows, ncomponents;
-    G4Material *SiO2, *H2O, *Aerogel, *worldMat, *Air_0, *NaI, *HPGe, *pips, *vacuum, *steel316L, *Al_mat, *Am_mat, *icruSphereMaterial;
-    G4Element *C, *Na, *I;
+    G4Material *SiO2, *H2O, *Aerogel, *worldMat, *Air_0, *HPGe, *pips, *vacuum, *steel316L, *Al_mat, *Am_mat, *icruSphereMaterial;
+    G4Element *C;
     G4Box *solidWorld, *solidRadiator, *solidDetector, *solidVacuum, *solidwater;
-    G4Tubs *solidScintillator, *solidPIPS, *solidContainer, *solidDeadLayer, *solidAm, *solidfAm;
-    G4LogicalVolume *logicWorld, *logicRadiator, *logicDetector, *logicScintillator, *logicPIPS, *logicVacuum, *logicwater, *logicContainer, *logicDeadLayer, *logicAm, *logicfAm, *fScoringVolume;
-    G4VPhysicalVolume *physWorld, *physRadiator, *physDetector, *physScintillator, *physPIPS, *physVacuum, *physwater, *physContainer, *physDeadLayer, *physfAm, *physAm;
+    G4Tubs *solidPIPS, *solidContainer, *solidDeadLayer, *solidAm, *solidfAm;
+    G4LogicalVolume *logicWorld, *logicRadiator, *logicDetector, *logicPIPS, *logicVacuum, *logicwater, *logicContainer, *logicDeadLayer, *logicAm, *logicfAm, *fScoringVolume;
+    G4VPhysicalVolume *physWorld, *physRadiator, *physDetector, *physPIPS, *physVacuum, *physwater, *physContainer, *physDeadLayer, *physfAm, *physAm;
     G4double fractionmass, density;
 
     // HPGe: p-type closed-end coaxial crystal (bore + n+ liner + p+ outer contact),

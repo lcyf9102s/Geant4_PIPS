@@ -18,14 +18,14 @@
 #include "TStyle.h"
 #include "TRandom3.h"
 
-void nn()
+void plotSpectrum(const char *datFile, const char *pngFile, int nBins)
 {
     using namespace std;
     TGraph *graph = new TGraph();
     graph->SetMarkerStyle(kFullCircle);
 
     fstream file;
-    file.open("output_fin.dat", ios::in);
+    file.open(datFile, ios::in);
 
     while(true)
     {
@@ -35,28 +35,98 @@ void nn()
         if(file.eof()) break;
     }
     file.close();
-    
+
     graph->GetXaxis()->SetTitle("Channel");
     graph->GetXaxis()->CenterTitle();
     graph->GetYaxis()->SetTitle("Counts");
     graph->GetYaxis()->CenterTitle();
 
-    TCanvas *canvas = new TCanvas("canvas", "Exponential Decay Fit", 800, 600);
+    TCanvas *canvas = new TCanvas("canvas", "Energy Deposition Spectrum", 800, 600);
     graph->Draw("AL");
 
-    graph->GetXaxis()->SetRangeUser(0, 2047);
+    graph->GetXaxis()->SetRangeUser(0, nBins - 1);
     canvas->Update();
-    canvas->SaveAs("EnergyDeposition.png");
-
+    canvas->SaveAs(pngFile);
+    delete canvas;
 }
 
+void nn() { plotSpectrum("output_fin.dat", "EnergyDeposition.png", 2048); }
+void nnHPGe() { plotSpectrum("output_fin_HPGe.dat", "EnergyDepositionHPGe.png", 4096); }
+
+// Same data as plotSpectrum, but auto-zooms the x-axis onto the tallest peak
+// (+/- windowHalfWidth channels) so the Gaussian broadening is visible instead
+// of being compressed into a sliver of the full spectrum range.
+void plotSpectrumZoom(const char *datFile, const char *pngFile, int windowHalfWidth)
+{
+    using namespace std;
+    std::vector<double> xs, ys;
+
+    fstream file;
+    file.open(datFile, ios::in);
+    while(true)
+    {
+        double x, y;
+        file >> x >> y;
+        if(file.eof()) break;
+        xs.push_back(x);
+        ys.push_back(y);
+    }
+    file.close();
+
+    if (xs.empty()) return;
+
+    int peakIdx = 0;
+    for (size_t i = 1; i < ys.size(); ++i) {
+        if (ys[i] > ys[peakIdx]) peakIdx = static_cast<int>(i);
+    }
+
+    TGraph *graph = new TGraph();
+    graph->SetMarkerStyle(kFullCircle);
+    for (size_t i = 0; i < xs.size(); ++i) {
+        graph->SetPoint(graph->GetN(), xs[i], ys[i]);
+    }
+
+    graph->GetXaxis()->SetTitle("Channel");
+    graph->GetXaxis()->CenterTitle();
+    graph->GetYaxis()->SetTitle("Counts");
+    graph->GetYaxis()->CenterTitle();
+
+    TCanvas *canvas = new TCanvas("canvasZoom", "Energy Deposition Spectrum (peak zoom)", 800, 600);
+    graph->Draw("AL");
+
+    int lo = std::max(0, peakIdx - windowHalfWidth);
+    int hi = std::min(static_cast<int>(xs.size()) - 1, peakIdx + windowHalfWidth);
+    graph->GetXaxis()->SetRangeUser(lo, hi);
+    canvas->Update();
+    canvas->SaveAs(pngFile);
+    delete canvas;
+}
+
+void nnHPGeZoom() { plotSpectrumZoom("output_fin_HPGe.dat", "EnergyDepositionHPGe_peak.png", 40); }
+
 void csv_to_dat(){
-    std::vector<double> data_column;
     std::string filename = "merge.csv"; // Your file name
-    std::vector<G4double> MCHist;
-    
-    MCHist.resize(2048, 0.0);
-    
+    // Column 0 (Edep): PIPS, alpha only, binned over 3-15 MeV, 2048 channels.
+    // Column 1 (EdepHPGe): HPGe, any particle, binned over 0-1 MeV, 4096 channels.
+    const int nBinsPIPS = 2048;
+    const int nBinsHPGe = 4096;
+    const double maxEnergyHPGe = 1.0; // MeV
+    std::vector<G4double> MCHist(nBinsPIPS, 0.0);
+    std::vector<G4double> MCHistHPGe(nBinsHPGe, 0.0);
+
+    // Electronics broadening model: FWHM(E)^2 = FWHM_noise^2 + 2.355^2 * F * eps * E
+    const double FWHM_noise      = 0.015;    // 15 keV, PIPS electronics noise
+    const double F_fano_Si       = 0.12;     // Si Fano factor
+    const double eps_Si          = 3.62e-6;  // MeV per e-h pair in Si
+
+    // FWHM_noise_HPGe calibrated to ORTEC's published GEM40 warranted resolution
+    // specs (GEM Series Product Configuration Guide): 0.87 keV FWHM @ 122 keV,
+    // 1.8 keV FWHM @ 1.33 MeV (Co-60), after subtracting the Fano contribution
+    // below -- both spec points independently imply ~0.63-0.70 keV.
+    const double FWHM_noise_HPGe = 0.00065;  // 0.65 keV, ORTEC GEM40-derived
+    const double F_fano_Ge       = 0.13;     // Ge Fano factor
+    const double eps_Ge          = 2.96e-6;  // MeV per e-h pair in Ge
+
     // Create an input file stream object
     std::ifstream inputFile(filename);
 
@@ -65,56 +135,69 @@ void csv_to_dat(){
         //return 1;
     }
 
+    G4double totalEnergy = 0.0;
+    size_t nLines = 0;
     std::string line;
-    // Read the file line by line
+    // Read the file line by line: each row is "Edep,EdepHPGe"
     while (std::getline(inputFile, line)) {
         // Skip any empty lines or header lines that start with '#'
         if (line.empty() || line[0] == '#') {
             continue;
         }
 
+        double E_pips = 0.0, E_hpge = 0.0;
         try {
-            // Convert the entire line to a double and add it to the vector
-            data_column.push_back(std::stod(line));
+            size_t comma = line.find(',');
+            E_pips = std::stod(line.substr(0, comma));
+            if (comma != std::string::npos) {
+                E_hpge = std::stod(line.substr(comma + 1));
+            }
         } catch (const std::invalid_argument& e) {
             std::cerr << "Warning: Could not convert line to a number: " << line << std::endl;
+            continue;
+        }
+        ++nLines;
+        totalEnergy += E_pips;
+
+        if (E_pips > 0) {
+            double fwhm2 = FWHM_noise * FWHM_noise + 5.5460 * F_fano_Si * eps_Si * E_pips;
+            double sigma  = std::sqrt(fwhm2) / 2.355;
+            double E_meas = gRandom->Gaus(E_pips, sigma);
+            if (E_meas > 3 && E_meas < 15) {
+                int ch = ceil(((E_meas - 3) * nBinsPIPS) / 12);
+                MCHist[ch] += 1;
+            }
+        }
+
+        if (E_hpge > 0) {
+            double fwhm2 = FWHM_noise_HPGe * FWHM_noise_HPGe + 5.5460 * F_fano_Ge * eps_Ge * E_hpge;
+            double sigma  = std::sqrt(fwhm2) / 2.355;
+            double E_meas = gRandom->Gaus(E_hpge, sigma);
+            int ch = floor((E_meas * nBinsHPGe) / maxEnergyHPGe);
+            if (ch >= 0 && ch < nBinsHPGe) {
+                MCHistHPGe[ch] += 1;
+            }
         }
     }
 
     inputFile.close();
 
-    // --- Verification: Print the contents of the vector ---
-    std::cout << "Successfully read " << data_column.size() << " data points." << std::endl;
-
-    // Electronics broadening model: FWHM(E)^2 = FWHM_noise^2 + 2.355^2 * F * eps * E
-    // FWHM_noise: electronic noise (MeV), F: Si Fano factor, eps: ionization energy per e-h pair (MeV)
-    const double FWHM_noise = 0.015;   // 15 keV
-    const double F_fano     = 0.12;    // Si Fano factor
-    const double eps_si     = 3.62e-6; // MeV per e-h pair in Si
-
-    G4double totalEnergy = 0.0;
-    for (size_t i = 0; i < data_column.size(); ++i) {
-        double E_true = data_column[i];
-        totalEnergy += E_true;
-        if (E_true > 0) {
-            double fwhm2 = FWHM_noise * FWHM_noise + 5.5460 * F_fano * eps_si * E_true;
-            double sigma  = std::sqrt(fwhm2) / 2.355;
-            double E_meas = gRandom->Gaus(E_true, sigma);
-            if (E_meas > 3 && E_meas < 15) {
-                int ch = ceil(((E_meas - 3) * 2048) / 12);
-                MCHist[ch] += 1;
-            }
-        }
-    }
-    G4cout << "Total energy: " << totalEnergy * 1.6 * pow(10, -13) << " J" << G4endl;
+    std::cout << "Successfully read " << nLines << " data points." << std::endl;
+    G4cout << "Total energy (PIPS): " << totalEnergy * 1.6 * pow(10, -13) << " J" << G4endl;
 
     std::ofstream outFile("output_fin.dat");
-    for(int i = 0; i < 2048; i++)
+    for(int i = 0; i < nBinsPIPS; i++)
     {
         outFile << i << " " << MCHist[i] << "\n";
     }
-    //outFile << "Total energy: " << totalEnergy << " Mev"<<"\n";
     outFile.close();
+
+    std::ofstream outFileHPGe("output_fin_HPGe.dat");
+    for(int i = 0; i < nBinsHPGe; i++)
+    {
+        outFileHPGe << i << " " << MCHistHPGe[i] << "\n";
+    }
+    outFileHPGe.close();
 }
 
 
@@ -130,7 +213,11 @@ int main(int argc, char** argv)
 
 
     // runManager->Initialize();
-    G4HadronicParameters::Instance()->SetTimeThresholdForRadioactiveDecay( 200*CLHEP::day );
+    // Nuclides with a half-life above this threshold are treated as stable and
+    // never decay in the simulation. 200 days was far too short for isotopes
+    // like Cs-137 (T half-life = 30.17 years) or Am-241 (T half-life = 432 years),
+    // which silently never decayed. 1000 years comfortably covers both.
+    G4HadronicParameters::Instance()->SetTimeThresholdForRadioactiveDecay( 1000*CLHEP::year );
 
     G4UIExecutive *ui = 0;
     if(argc == 1)
@@ -168,9 +255,11 @@ int main(int argc, char** argv)
     G4String fileName = argv[1];
     UImanager->ApplyCommand(command2 + fileName);
     //nn();
-    system("tail -n +6 -q output_nt_Scoring_t*.csv >> merge.csv");
+    system("tail -n +7 -q output_nt_Scoring_t*.csv >> merge.csv");
     csv_to_dat();
     nn();
+    nnHPGe();
+    nnHPGeZoom();
     }
 
     //return 0;

@@ -1,0 +1,55 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Same illustrative natural background line mix as run_scint_background.mac,
+# plus a real Cs-137 decay source layered on top via GPS multi-source -- e.g.
+# a Cs-137 check source being measured with ambient background still present.
+# Each event draws from exactly one of the two sources (default
+# /gps/source/multiplevertex false), weighted by the intensities below:
+# background=1, Cs-137=4.
+#
+# Cs-137 (T half-life = 30.17 y) beta-decays to Ba-137m (T half-life =
+# 2.55 min), which de-excites via a single 661.7 keV gamma in ~85% of decays --
+# unlike Eu-152's ~12-line spectrum, this adds one photopeak on top of the
+# background hump structure rather than a second set of overlapping humps.
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/gps/ene/type Arb
+/gps/hist/type arb
+#-------- E (MeV) -- relative yield (~photons per 100 decays) -- isotope (chain)
+/gps/hist/point 0.23863  43.3   # Pb-212 (Th)
+/gps/hist/point 0.29522  18.5   # Pb-214 (U)
+/gps/hist/point 0.33832  11.3   # Ac-228 (Th)
+/gps/hist/point 0.35193  35.1   # Pb-214 (U)
+/gps/hist/point 0.511    20.0   # e+e- annihilation
+/gps/hist/point 0.58319  30.6   # Tl-208 (Th)
+/gps/hist/point 0.60931  44.6   # Bi-214 (U)
+/gps/hist/point 0.9112   25.8   # Ac-228 (Th)
+/gps/hist/point 0.969    15.8   # Ac-228 (Th)
+/gps/hist/point 1.12029  14.7   # Bi-214 (U)
+/gps/hist/point 1.23811   5.79  # Bi-214 (U)
+/gps/hist/point 1.37767   3.90  # Bi-214 (U)
+/gps/hist/point 1.46082  10.66  # K-40
+/gps/hist/point 1.76449  15.1   # Bi-214 (U)
+/gps/hist/point 2.2041    4.91  # Bi-214 (U)
+/gps/hist/point 2.61451  35.85  # Tl-208 (Th)
+/gps/hist/inter Lin
+
+# Source 1: real Cs-137 decay
+/gps/source/add 4
+/gps/particle ion
+/gps/ion 55 137
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

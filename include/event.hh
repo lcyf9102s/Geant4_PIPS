@@ -18,10 +18,14 @@ public:
     virtual void EndOfEventAction(const G4Event*);
     //void AddEventAction(MyEventAction* eventAction);
 
-    void AddEdep(G4double edep){ 
+    void AddEdep(G4double edep){
         fEdep += edep;
         //G4cout << "Energy deposition: " << fEdep << " MeV" << G4endl;
     } // 计算能量沉积
+
+    void AddEdepScint(G4double edep){
+        fEdepScint += edep;
+    }
 
     void vmasscalc(G4double density, G4double volume) {
         vmass = density * volume;
@@ -29,6 +33,7 @@ public:
 
 private:
     G4double fEdep;
+    G4double fEdepScint;
     G4double vmass;
     //std::vector<MyEventAction*> fEventActions;
     MyRunAction *fRunAction;

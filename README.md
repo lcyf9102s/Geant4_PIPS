@@ -114,6 +114,7 @@ Example — 100000 Cs-137 decays aimed at the HPGe crystal:
 | `run_eu152_hpge.mac` | z = +50 mm | 3 mm | Eu-152 ion source aimed at HPGe (real decay physics); ~12 significant gamma lines from 122–1408 keV, the classic multi-line HPGe efficiency-calibration source. See below |
 | `run_hpge_background_eu152.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Eu-152 decay source (GPS multi-source, relative intensity 1:4). See below |
 | `run_hpge_background_cs137.mac` | z = +50 mm | 3 mm | `run_hpge_background.mac`'s line mix plus a real Cs-137 decay source (GPS multi-source, relative intensity 1:4) — e.g. a Cs-137 check source measured with ambient background present. See below |
+| `run_hpge_background_cs137_lowbg.mac` | z = +50 mm | 3 mm | Low-background variant of `run_hpge_background_cs137.mac`: same two sources, but background weight cut a further 10x relative to Cs-137 (relative intensity 1:40) — approximates a shielded/low-background counting facility. See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -209,6 +210,16 @@ Each isolated run used 2,000,000 events; each layered-on-background run used 20,
 | Co-60 + background | Eu-152 + background | Cs-137 + background |
 |---|---|---|
 | ![Background plus Co-60](docs/images/spectrum_hpge_background_co60_log.png) | ![Background plus Eu-152](docs/images/spectrum_hpge_background_eu152_log.png) | ![Background plus Cs-137](docs/images/spectrum_hpge_background_cs137_log.png) |
+
+### Low-background Cs-137 measurement
+
+`run_hpge_background_cs137_lowbg.mac` models the same Cs-137 check source and the same natural background line mix as `run_hpge_background_cs137.mac`, but with the background source's relative GPS weight cut a further 10x (background:Cs-137 = 1:40, vs. 1:4 above) — approximating a low-background counting facility (extra Pb/Cu shielding, radon-purged enclosure, underground siting) that suppresses the ambient background rate by roughly an order of magnitude while the check source's own activity is unchanged. Only the relative source weights change; the Cs-137 decay physics, geometry, and background line set are identical to the standard-background case.
+
+20,000,000 events via `run_hpge_background_cs137_lowbg.mac`:
+
+![Background plus Cs-137, low background](docs/images/spectrum_hpge_background_cs137_lowbg_log.png)
+
+Compared to the standard-background spectrum above, the 661.7 keV photopeak now towers roughly 3 orders of magnitude over the local continuum (vs. ~2 in the standard-background case), and the background's own natural lines (Pb-212/Pb-214/Bi-214/Ac-228/Tl-208, K-40) are correspondingly suppressed relative to the Cs-137 signal — the expected effect of improved shielding on signal-to-background ratio, not a change to the source itself.
 
 ## Physics list
 

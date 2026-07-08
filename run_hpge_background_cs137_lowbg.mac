@@ -1,0 +1,63 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Low-background variant of run_hpge_background_cs137.mac: same natural
+# background line mix and the same real Cs-137 decay source, but the
+# background source's relative GPS weight is cut by a further factor of 10
+# (background:Cs-137 = 1:40, vs. 1:4 in the standard-background macro) --
+# approximating a low-background counting facility (extra Pb/Cu shielding,
+# radon-purged enclosure, underground siting, etc.) that suppresses the
+# ambient background rate by roughly an order of magnitude relative to a
+# typical lab bench setup, while the Cs-137 check source's own activity is
+# unchanged. Only the relative source weights matter for GPS multi-source
+# (see /gps/source/add below); this is not a change to the source physics,
+# geometry, or Cs-137 decay itself.
+#
+# Cs-137 uses real decay physics (ion source, as with run_cs137_hpge.mac),
+# not an Arb line: beta-decays to Ba-137m, which de-excites via the 661.7 keV
+# gamma in ~85% of decays (the other ~15% are internal conversion, producing
+# Ba K-shell X-rays around 32-37 keV instead -- also visible in the spectrum).
+
+# Source 0: natural background line mix (implicit weight 1)
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/gps/ene/type Arb
+/gps/hist/type arb
+#-------- E (MeV) -- relative yield (~photons per 100 decays) -- isotope (chain)
+/gps/hist/point 0.23863  43.3   # Pb-212 (Th)
+/gps/hist/point 0.29522  18.5   # Pb-214 (U)
+/gps/hist/point 0.33832  11.3   # Ac-228 (Th)
+/gps/hist/point 0.35193  35.1   # Pb-214 (U)
+/gps/hist/point 0.511    20.0   # e+e- annihilation
+/gps/hist/point 0.58319  30.6   # Tl-208 (Th)
+/gps/hist/point 0.60931  44.6   # Bi-214 (U)
+/gps/hist/point 0.9112   25.8   # Ac-228 (Th)
+/gps/hist/point 0.969    15.8   # Ac-228 (Th)
+/gps/hist/point 1.12029  14.7   # Bi-214 (U)
+/gps/hist/point 1.23811   5.79  # Bi-214 (U)
+/gps/hist/point 1.37767   3.90  # Bi-214 (U)
+/gps/hist/point 1.46082  10.66  # K-40
+/gps/hist/point 1.76449  15.1   # Bi-214 (U)
+/gps/hist/point 2.2041    4.91  # Bi-214 (U)
+/gps/hist/point 2.61451  35.85  # Tl-208 (Th)
+/gps/hist/inter Lin
+
+# Source 1: real Cs-137 decay, weight 40 (vs. 4 in the standard-background
+# macro) -- a 10x higher relative weight, i.e. a 10x lower relative background.
+/gps/source/add 40
+/gps/particle ion
+/gps/ion 55 137
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

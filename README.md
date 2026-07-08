@@ -110,6 +110,7 @@ Example — 100000 Cs-137 decays aimed at the scintillator:
 | `run_scint_background.mac` | z = +50 mm | 3 mm | Illustrative "shield background" spectrum: one gamma source emitting a discrete mix of ~16 natural background lines (U-238/Th-232 chain daughters, K-40, 511 keV annihilation) via `/gps/ene/type Arb`, weighted by approximate photon yield. See below |
 | `run_eu152_scint.mac` | z = +50 mm | 3 mm | Eu-152 ion source aimed at the scintillator (real decay physics); ~12 significant gamma lines from 122–1408 keV, blurred by NaI(Tl)'s poor resolution into overlapping broad humps rather than resolving individually. See below |
 | `run_scint_background_eu152.mac` | z = +50 mm | 3 mm | `run_scint_background.mac`'s line mix plus a real Eu-152 decay source (GPS multi-source, relative intensity 1:4). See below |
+| `run_scint_background_cs137.mac` | z = +50 mm | 3 mm | `run_scint_background.mac`'s line mix plus a real Cs-137 decay source (GPS multi-source, relative intensity 1:4). See below |
 | `vis.mac` | — | — | Interactive visualization |
 
 All batch macros use 16 threads and `G4GeneralParticleSource`. The isotope and event count are passed via command-line aliases `{Znum}`, `{Anum}`, `{NumberOfParticles}`.
@@ -203,6 +204,16 @@ NaI(Tl)'s photon-statistics-limited resolution (11.5% at 662 keV) blurs neighbor
 ![Background plus Eu-152 (scintillator)](docs/images/spectrum_scint_background_eu152_log.png)
 
 The Eu-152 hump structure dominates the low-to-mid energy range, with the background's own higher-energy line cluster (Bi-214/Tl-208, up to 2614 keV) still visible past ~1500 keV since Eu-152 has no lines above 1408 keV.
+
+### Adding a Cs-137 source
+
+`run_scint_background_cs137.mac` uses real Cs-137 decay physics (`/gps/ion 55 137`) — beta- decay to Ba-137m, which de-excites via a single 661.7 keV gamma in ~85% of decays. Unlike Eu-152's ~12-line spectrum, this adds one photopeak rather than a second set of overlapping humps.
+
+`run_scint_background_cs137.mac` layers this on the same natural background line mix (relative intensity 1:4, background:Cs-137). 20,000,000 events:
+
+![Background plus Cs-137 (scintillator)](docs/images/spectrum_scint_background_cs137_log.png)
+
+The broad 661.7 keV photopeak (~76 keV physical FWHM, per the ORTEC-calibrated resolution model above) sits well clear of the background's low-energy hump cluster (below ~450 keV) and above most of its higher-energy lines, dominating the mid-energy range of the spectrum.
 
 ## Physics list
 

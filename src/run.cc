@@ -18,7 +18,8 @@ MyRunAction::MyRunAction()
     
     // Create an n-tuple to store the energy deposition
     analysisManager->CreateNtuple("Scoring", "Deposited Energy");
-    analysisManager->CreateNtupleDColumn("Edep"); // Double-precision column for Edep
+    analysisManager->CreateNtupleDColumn("Edep"); // Column 0: PIPS (alpha)
+    analysisManager->CreateNtupleDColumn("EdepHPGe"); // Column 1: HPGe
     analysisManager->FinishNtuple();
     totalEnergy = 0.0;
     vol_mass = 0.0;    

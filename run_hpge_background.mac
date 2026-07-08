@@ -1,0 +1,47 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Illustrative "shield background" spectrum: a single gamma source emitting a
+# discrete mix of the most prominent natural background lines (U-238 and
+# Th-232 decay-chain daughters, K-40, and 511 keV annihilation), weighted by
+# approximate photon yield per 100 decays. This approximates the multi-peak,
+# Compton-continuum-backed shape of a real shielded HPGe background spectrum
+# (see e.g. papers reporting "Background in Shield" spectra) without modeling
+# the underlying physical sources (shield-material trace activity, cosmic-ray
+# induced background) -- those would need activation + muon-shower physics
+# this project doesn't implement. Yields are approximate reference values,
+# not a precision nuclear-data reproduction.
+#
+# {Znum}/{Anum} are unused by this macro but main() still expects 4 batch
+# arguments, so pass any placeholder values, e.g.:
+#   ./G4Decay run_hpge_background.mac 1000000 1 1
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/direction 0 0 1
+/gps/number 1
+
+/gps/ene/type Arb
+/gps/hist/type arb
+#-------- E (MeV) -- relative yield (~photons per 100 decays) -- isotope (chain)
+/gps/hist/point 0.23863  43.3   # Pb-212 (Th)
+/gps/hist/point 0.29522  18.5   # Pb-214 (U)
+/gps/hist/point 0.33832  11.3   # Ac-228 (Th)
+/gps/hist/point 0.35193  35.1   # Pb-214 (U)
+/gps/hist/point 0.511    20.0   # e+e- annihilation
+/gps/hist/point 0.58319  30.6   # Tl-208 (Th)
+/gps/hist/point 0.60931  44.6   # Bi-214 (U)
+/gps/hist/point 0.9112   25.8   # Ac-228 (Th)
+/gps/hist/point 0.969    15.8   # Ac-228 (Th)
+/gps/hist/point 1.12029  14.7   # Bi-214 (U)
+/gps/hist/point 1.23811   5.79  # Bi-214 (U)
+/gps/hist/point 1.37767   3.90  # Bi-214 (U)
+/gps/hist/point 1.46082  10.66  # K-40
+/gps/hist/point 1.76449  15.1   # Bi-214 (U)
+/gps/hist/point 2.2041    4.91  # Bi-214 (U)
+/gps/hist/point 2.61451  35.85  # Tl-208 (Th) -- classic high-energy natural background line
+/gps/hist/inter Lin
+
+/run/beamOn {NumberOfParticles}

@@ -1,0 +1,20 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Co-60 (T half-life = 5.27 y) beta-decays to Ni-60, which de-excites via a
+# 1173.2 + 1332.5 keV gamma cascade in near-100% coincidence per decay. Real
+# decay physics (not an Arb energy histogram) is used here so that both
+# cascade photons are tracked within the same event -- this naturally
+# reproduces the classic ~2505 keV coincidence sum peak when both gammas
+# deposit their full energy in the same event, which a real Co-60 spectrum
+# also shows (more prominently at close source-detector distances).
+/gps/particle ion
+/gps/ion 27 60
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

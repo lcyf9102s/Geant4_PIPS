@@ -1,0 +1,20 @@
+/run/numberOfThreads 16
+/run/initialize
+
+# Eu-152 (T half-life = 13.5 y) decays via EC (72.1%) to Sm-152 and beta-
+# (27.9%) to Gd-152, producing a rich cascade of ~12 significant gamma lines
+# spanning 122 keV to 1408 keV -- the classic multi-line source used to
+# calibrate HPGe detector efficiency across a wide energy range. Real decay
+# physics (ion source, as with run_co60_hpge.mac) is used rather than an Arb
+# histogram, so genuinely cascading transitions are tracked within the same
+# event and can produce coincidence sum peaks where applicable.
+/gps/particle ion
+/gps/ion 63 152
+/gps/energy 0. eV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 50 mm
+/gps/pos/radius 3 mm
+/gps/number 1
+
+/run/beamOn {NumberOfParticles}

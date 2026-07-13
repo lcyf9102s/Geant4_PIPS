@@ -93,7 +93,11 @@ The n-tuple is written per-thread to `output_nt_Scoring_t<N>.csv` by Geant4's an
 
 ### Physics list (physics.cc)
 
-Registered physics: `G4EmStandardPhysics`, `G4OpticalPhysics`, `G4DecayPhysics`, `G4RadioactiveDecayPhysics`. Radioactive decay time threshold set to 1000 years in `main()` (see the Fixed bug note above).
+Registered physics: `G4EmStandardPhysics_option4`, `G4OpticalPhysics`, `G4DecayPhysics`, `G4RadioactiveDecayPhysics`. Radioactive decay time threshold set to 1000 years in `main()` (see the Fixed bug note above).
+
+**EM physics variant:** uses `G4EmStandardPhysics_option4` rather than the plain `G4EmStandardPhysics`, since this project is a low-energy spectroscopy/thin-layer application (keV-MeV gammas, alpha stopping in a 650 µm Si layer) rather than a high-energy collider use case. `option4` adds Doppler-broadened Compton scattering, tighter step-size limits (down to 1 µm for ions vs. no explicit limit in the plain variant), safety-plus multiple-scattering step limiting near boundaries, and a lower lowest-electron-energy threshold (100 eV) — all more relevant here than in the default variant. Note: `G4RadioactiveDecayPhysics::ConstructProcess()` already calls `G4EmParameters::SetAuger(true)`, which internally also sets fluorescence on — so atomic deexcitation (fluorescence + Auger) is active globally regardless of which EM variant is registered, as long as `G4RadioactiveDecayPhysics` is present (verified against the Geant4 11.3.2 source).
+
+**Region-based production cuts:** `construction.cc` defines a `G4Region("PIPSThinLayers")` containing `logicDeadLayer` (50 nm) and `logicPIPS` (650 µm), with the production cut tightened to 1 µm (vs. the global 1 mm default). The default cut is 1-4 orders of magnitude coarser than these two volumes, so secondary electrons/photons below the cut energy were never explicitly tracked inside them — this affected the shape of the alpha energy-loss straggling near the entrance window and active-layer boundary. Changing either the EM physics variant or these cuts changes simulated energy deposition (e.g. total PIPS energy for the `run3_3.mac`/Po-218 regression check shifted from `3.60558e-09 J` to `3.26911e-09 J`, about −9.3%) — this is an intended physics change, not a bug, so don't treat that regression value as a fixed invariant going forward.
 
 ### Macro files
 

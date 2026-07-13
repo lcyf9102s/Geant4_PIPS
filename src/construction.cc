@@ -1,4 +1,6 @@
 #include "construction.hh"
+#include "G4Region.hh"
+#include "G4ProductionCuts.hh"
 
 MyDetectorConstruction::MyDetectorConstruction()
 {
@@ -193,6 +195,18 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     physPIPS = new G4PVPlacement(0, G4ThreeVector(0., 0., 0.325 * mm + 0.05 * um), logicPIPS, "physPIPS", logicVacuum, false, 0, true);
 
     fScoringVolume = logicPIPS;
+
+    // Default production cuts (1 mm) are far coarser than the 50 nm dead
+    // layer and 650 um active layer, so secondary electrons/photons below
+    // the cut energy are never explicitly tracked inside them -- this
+    // smears the alpha energy-loss straggling near the entrance window and
+    // active-layer boundary. Tighten the cut for just these two volumes.
+    G4Region *pipsRegion = new G4Region("PIPSThinLayers");
+    pipsRegion->AddRootLogicalVolume(logicDeadLayer);
+    pipsRegion->AddRootLogicalVolume(logicPIPS);
+    G4ProductionCuts *pipsCuts = new G4ProductionCuts();
+    pipsCuts->SetProductionCut(1.0 * um);
+    pipsRegion->SetProductionCuts(pipsCuts);
     // 探测器构建
     // 先定义solid空间，由于之后定义的灵敏体积要外部访问探测器的logical空间，因此需要在头文件中MyDetectorConstruction类中定义
     // 探测器的logical空间

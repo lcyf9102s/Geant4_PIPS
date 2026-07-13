@@ -137,7 +137,7 @@ As `FWHM_noise` increases, the alpha peak flattens and broadens while the total 
 
 | Module | Purpose |
 |---|---|
-| `G4EmStandardPhysics` | Electromagnetic interactions (ionization, multiple scattering) |
+| `G4EmStandardPhysics_option4` | Electromagnetic interactions (ionization, multiple scattering) — the high-precision variant, appropriate for this project's low-energy spectroscopy/thin-layer geometry rather than the plain default |
 | `G4OpticalPhysics` | Optical photon transport |
 | `G4DecayPhysics` | Particle decays |
 | `G4RadioactiveDecayPhysics` | Radioactive decay chains |

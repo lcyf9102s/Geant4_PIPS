@@ -158,6 +158,23 @@ void csv_to_dat(){
     const double F_fano_Si       = 0.12;     // Si Fano factor
     const double eps_Si          = 3.62e-6;  // MeV per e-h pair in Si
 
+    // PIPS energy calibration: alphas lose a source-encapsulation-dependent
+    // amount of energy before reaching the active layer (Fe self-absorption
+    // near the Am-241 disc surface, then the 50 nm Si dead layer, then any
+    // delta rays that escape the 1 um region-cut boundary -- see CLAUDE.md's
+    // "Region-based production cuts" note). Real alpha spectrometers are
+    // calibrated the same way: measure known lines, fit a linear map from
+    // raw pulse height back to true energy. Derived here from two lines
+    // simulated with run3.mac's exact source geometry (same Fe thickness /
+    // dead-layer path length): Am-241 (true 5.486 MeV, measured peak 4.8633
+    // MeV) and Po-218 (true 6.0023 MeV, measured peak 5.2793 MeV), fit as
+    // E_true = slope*E_meas + offset. This is geometry-specific -- dead-layer
+    // path length depends on the incident-angle distribution, which varies
+    // by source position/macro -- so re-derive if the source geometry
+    // changes materially (e.g. off-axis multi-spot macros).
+    const double PIPS_calib_slope  = 1.241106;
+    const double PIPS_calib_offset = -0.549870;
+
     // FWHM_noise_HPGe calibrated to ORTEC's published GEM40 warranted resolution
     // specs (GEM Series Product Configuration Guide): 0.87 keV FWHM @ 122 keV,
     // 1.8 keV FWHM @ 1.33 MeV (Co-60), after subtracting the Fano contribution
@@ -202,8 +219,9 @@ void csv_to_dat(){
             double fwhm2 = FWHM_noise * FWHM_noise + 5.5460 * F_fano_Si * eps_Si * E_pips;
             double sigma  = std::sqrt(fwhm2) / 2.355;
             double E_meas = gRandom->Gaus(E_pips, sigma);
-            if (E_meas > 3 && E_meas < 15) {
-                int ch = ceil(((E_meas - 3) * nBinsPIPS) / 12);
+            double E_calib = PIPS_calib_slope * E_meas + PIPS_calib_offset;
+            if (E_calib > 3 && E_calib < 15) {
+                int ch = ceil(((E_calib - 3) * nBinsPIPS) / 12);
                 MCHist[ch] += 1;
             }
         }

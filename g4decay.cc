@@ -97,17 +97,22 @@ void csv_to_dat(){
     // near the Am-241 disc surface, then the 50 nm Si dead layer, then any
     // delta rays that escape the 1 um region-cut boundary -- see CLAUDE.md's
     // "Region-based production cuts" note). Real alpha spectrometers are
-    // calibrated the same way: measure known lines, fit a linear map from
-    // raw pulse height back to true energy. Derived here from two lines
-    // simulated with run3.mac's exact source geometry (same Fe thickness /
-    // dead-layer path length): Am-241 (true 5.486 MeV, measured peak 4.8633
-    // MeV) and Po-218 (true 6.0023 MeV, measured peak 5.2793 MeV), fit as
-    // E_true_calib = slope*E_meas + offset. This is geometry-specific --
-    // dead-layer path length depends on the incident-angle distribution,
-    // which varies by source position/macro -- so re-derive if the source
-    // geometry changes materially (e.g. off-axis multi-spot macros).
-    const double PIPS_calib_slope  = 1.241106;
-    const double PIPS_calib_offset = -0.549870;
+    // calibrated the same way: measure known lines, fit a map from raw pulse
+    // height back to true energy. A first pass used a 2-point linear fit
+    // (Am-241/Po-218 only); a wider 12-isotope sweep with run3.mac's exact
+    // source geometry (4.08-8.78 MeV: Th-232, U-238, Ra-226, Pu-239, Po-210,
+    // Am-241, Rn-222, Cm-244, Po-218, Po-216, Po-214, Po-212) showed the
+    // linear fit's RMS residual (49.0 keV) roughly halves under a quadratic
+    // fit (20.7 keV RMS, max 43.5 keV at the low-energy extreme, Th-232) --
+    // the dead-layer loss isn't perfectly linear in incident energy over
+    // this wide a range. E_true = a*E_meas^2 + b*E_meas + c. This is
+    // geometry-specific -- dead-layer path length depends on the
+    // incident-angle distribution, which varies by source position/macro --
+    // so re-derive if the source geometry changes materially (e.g. off-axis
+    // multi-spot macros).
+    const double PIPS_calib_a = 0.033848;
+    const double PIPS_calib_b = 0.869085;
+    const double PIPS_calib_c = 0.468628;
 
     G4double totalEnergy = 0.0;
     for (size_t i = 0; i < data_column.size(); ++i) {
@@ -117,7 +122,7 @@ void csv_to_dat(){
             double fwhm2 = FWHM_noise * FWHM_noise + 5.5460 * F_fano * eps_si * E_true;
             double sigma  = std::sqrt(fwhm2) / 2.355;
             double E_meas = gRandom->Gaus(E_true, sigma);
-            double E_calib = PIPS_calib_slope * E_meas + PIPS_calib_offset;
+            double E_calib = PIPS_calib_a * E_meas * E_meas + PIPS_calib_b * E_meas + PIPS_calib_c;
             if (E_calib > 3 && E_calib < 15) {
                 int ch = ceil(((E_calib - 3) * 2048) / 12);
                 MCHist[ch] += 1;

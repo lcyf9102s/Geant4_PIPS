@@ -10,7 +10,7 @@ Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) de
 - Multi-threaded simulation (16 threads via Geant4 MT)
 - Automatic post-processing: per-thread CSV merge → 2048-channel spectrum → PNG plot
 - Electronics broadening model: Gaussian smearing with Fano noise + configurable electronics noise FWHM
-- PIPS dead-layer energy calibration: linear correction (derived from two known alpha lines) mapping raw deposited energy back to true incident energy
+- PIPS dead-layer energy calibration: quadratic correction (derived from a 12-isotope, 4.08-8.78 MeV sweep) mapping raw deposited energy back to true incident energy
 
 ## Dependencies
 
@@ -126,15 +126,40 @@ The parameter `FWHM_noise` can be adjusted in `csv_to_dat()` in [g4decay.cc](g4d
 
 ## PIPS dead-layer energy calibration
 
-Alphas lose energy before reaching the active layer — self-absorption in the Am-241 source's own Fe encapsulation, the 50 nm Si dead layer, and delta rays escaping the 1 µm production-cut boundary (see [Region-based production cuts](CLAUDE.md) for why that cut matters). For Am-241's main line this loss is substantial: ~0.6 MeV out of 5.486 MeV (~11%), so the raw deposited-energy peak reads low. This isn't a simulation bug — real PIPS alpha spectrometers show the exact same effect and are calibrated the same way: measure known lines, fit a linear map from raw pulse height back to true energy.
+Alphas lose energy before reaching the active layer — self-absorption in the source's own Fe encapsulation, the 50 nm Si dead layer, and delta rays escaping the 1 µm production-cut boundary (see [Region-based production cuts](CLAUDE.md) for why that cut matters). For Am-241's main line this loss is substantial: ~0.6 MeV out of 5.486 MeV (~11%), so the raw deposited-energy peak reads low. This isn't a simulation bug — real PIPS alpha spectrometers show the exact same effect and are calibrated the same way: measure known lines, fit a map from raw pulse height back to true energy.
 
 `csv_to_dat()` applies this calibration before binning:
 
-$$E_{\text{true}} = \mathrm{slope} \cdot E_{\text{meas}} + \mathrm{offset}, \quad \mathrm{slope} = 1.241106,\ \mathrm{offset} = -0.549870\ \mathrm{MeV}$$
+$$E_{\text{true}} = a \cdot E_{\text{meas}}^2 + b \cdot E_{\text{meas}} + c, \quad a = 0.033848,\ b = 0.869085,\ c = 0.468628\ \mathrm{MeV}$$
 
-Derived from two lines simulated with `run3.mac`'s exact source geometry: Am-241 (true 5.486 MeV, measured peak 4.8633 MeV) and Po-218 (true 6.0023 MeV, measured peak 5.2793 MeV). Validated against a third, independent case — `run3_3.mac`'s Po-218 peak (a different source geometry, 3 spot sources vs. one disc) — which the calibration was **not** fit to: calibrated peak lands at 6.0000 MeV vs. the true 6.0023 MeV, 2.3 keV off. The dead-layer loss turns out to be only weakly sensitive to the small angular spread between these macros' source geometries, so a single calibration generalizes reasonably well across them — but it's still specific to this detector geometry and should be re-derived if the dead-layer thickness, source encapsulation, or production cut changes.
+A first pass used a 2-point linear fit (Am-241, Po-218 only). A wider sweep — 12 alpha-emitting isotopes simulated with `run3.mac`'s exact source geometry, spanning 4.08–8.78 MeV — showed the dead-layer loss isn't perfectly linear in incident energy over this wide a range, and a quadratic fit roughly halves the residual. (`main`'s 200-day decay threshold is too short for the long-lived isotopes in this set, e.g. Th-232's 14 billion-year half-life — it was temporarily raised for this validation sweep only, then reverted; see Physics list below for why the threshold is 200 days here in the first place.)
 
-`PIPS_calib_slope`/`PIPS_calib_offset` in `csv_to_dat()` are the two adjustable constants. This only rescales the channel axis for display — it does not touch the raw Geant4 energy deposit, so `Total energy` in the run summary remains the true raw deposited energy. Note: since `main`'s decay threshold is still 200 days (see Physics list below), Am-241 (T½ = 432 years) won't actually decay here — the calibration was cross-checked on this branch using Po-218 instead.
+| Isotope | True energy (MeV) | Raw measured (MeV) | Linear-calibrated | Quadratic-calibrated |
+|---|---|---|---|---|
+| Th-232 | 4.0834 | 3.6035 | 3.9644 (−119.0 keV) | 4.0399 (−43.5 keV) |
+| U-238 | 4.1980 | 3.7617 | 4.1605 (−37.5 keV) | 4.2169 (+18.9 keV) |
+| Ra-226 | 4.7840 | 4.2891 | 4.8145 (+30.5 keV) | 4.8189 (+34.9 keV) |
+| Pu-239 | 5.1570 | 4.5879 | 5.1850 (+28.0 keV) | 5.1684 (+11.4 keV) |
+| Po-210 | 5.3040 | 4.7168 | 5.3449 (+40.9 keV) | 5.3210 (+17.0 keV) |
+| Am-241 | 5.4860 | 4.8457 | 5.5047 (+18.7 keV) | 5.4747 (−11.3 keV) |
+| Rn-222 | 5.4895 | 4.8574 | 5.5193 (+29.8 keV) | 5.4888 (−0.7 keV) |
+| Cm-244 | 5.8050 | 5.1152 | 5.8390 (+34.0 keV) | 5.7999 (−5.1 keV) |
+| Po-218 | 6.0023 | 5.2734 | 6.0351 (+32.8 keV) | 5.9930 (−9.3 keV) |
+| Po-216 | 6.7785 | 5.9004 | 6.8126 (+34.1 keV) | 6.7750 (−3.5 keV) |
+| Po-214 | 7.6869 | 6.5859 | 7.6627 (−24.2 keV) | 7.6605 (−26.4 keV) |
+| Po-212 | 8.7844 | 7.4355 | 8.7163 (−68.1 keV) | 8.8021 (+17.7 keV) |
+
+**RMS residual: 49.0 keV (linear) vs. 20.7 keV (quadratic); max residual: 119.0 keV (linear, Th-232) vs. 43.5 keV (quadratic, also Th-232).**
+
+![Calibration residuals: linear vs. quadratic](docs/images/spectrum_pips_calib_residuals.png)
+
+The linear fit's residuals bow — positive in the middle of the fit range, negative at both extremes — the classic signature of missing curvature. The quadratic fit is centered near zero across most of the range and only grows again right at the two extremes (4.08 MeV, 8.78 MeV), where a third calibration point or a cubic term would help further. Example spectra at the two extremes of this validation set, showing clean single peaks positioned correctly on the calibrated scale:
+
+| Th-232 (4.08 MeV, lowest tested) | Po-212 (8.78 MeV, highest tested) |
+|---|---|
+| ![Th-232 spectrum](docs/images/spectrum_pips_th232.png) | ![Po-212 spectrum](docs/images/spectrum_pips_po212.png) |
+
+`PIPS_calib_a`/`PIPS_calib_b`/`PIPS_calib_c` in `csv_to_dat()` are the three adjustable constants. This only rescales the channel axis for display — it does not touch the raw Geant4 energy deposit, so `Total energy` in the run summary remains the true raw deposited energy. It's still specific to this detector geometry and should be re-derived if the dead-layer thickness, source encapsulation, or production cut changes.
 
 ### Example spectra
 

@@ -11,6 +11,7 @@ Geant4 Monte Carlo simulation of a PIPS (Passivated Implanted Planar Silicon) de
 - Multi-threaded simulation (16 threads via Geant4 MT)
 - Automatic post-processing: per-thread CSV merge → binned spectra → PNG plots, for both PIPS and the scintillator
 - Electronics/detector broadening model per detector: Gaussian smearing with Fano noise for PIPS, photon-statistics scaling law for the scintillator (calibrated to ORTEC's published NaI(Tl) resolution data)
+- PIPS dead-layer energy calibration: linear correction (derived from two known alpha lines) mapping raw deposited energy back to true incident energy
 - Log-scale scintillator plot for wide-dynamic-range spectra
 - Illustrative natural-background spectrum (Arb-histogram line mix), with a real Eu-152 decay source layerable on top via GPS multi-source
 
@@ -158,6 +159,18 @@ $$\mathrm{FWHM}(E) = R_{662} \cdot \sqrt{E_{ref} \cdot E}, \quad E_{ref} = 662\ 
 `R_662 = 0.115` (11.5%) comes from ORTEC's own "Experiment 3: Gamma-Ray Spectroscopy Using NaI(Tl)" guide, which derives this exact $1/\sqrt{E}$ scaling law from photoelectron-counting statistics and works a concrete example: a measured Cs-137 photopeak at channel 280 with FWHM = 32 channels, giving 11.5% resolution at 662 keV (Experiment 3.4). ORTEC notes a theoretical floor of ~7.4% for a high-quality detector (~1000 photoelectrons) and a typical range of 7-10%; 11.5% is their own worked example, not the best-case spec.
 
 Both parameters can be adjusted in `csv_to_dat()` in [g4decay.cc](g4decay.cc).
+
+## PIPS dead-layer energy calibration
+
+Alphas lose energy before reaching the active layer — self-absorption in the Am-241 source's own Fe encapsulation, the 50 nm Si dead layer, and delta rays escaping the 1 µm production-cut boundary (see [Region-based production cuts](CLAUDE.md) for why that cut matters). For Am-241's main line this loss is substantial: ~0.6 MeV out of 5.486 MeV (~11%), so the raw deposited-energy peak reads low. This isn't a simulation bug — real PIPS alpha spectrometers show the exact same effect and are calibrated the same way: measure known lines, fit a linear map from raw pulse height back to true energy.
+
+`csv_to_dat()` applies this calibration to the PIPS channel before binning:
+
+$$E_{\text{true}} = \mathrm{slope} \cdot E_{\text{meas}} + \mathrm{offset}, \quad \mathrm{slope} = 1.241106,\ \mathrm{offset} = -0.549870\ \mathrm{MeV}$$
+
+Derived from two lines simulated with `run3.mac`'s exact source geometry: Am-241 (true 5.486 MeV, measured peak 4.8633 MeV) and Po-218 (true 6.0023 MeV, measured peak 5.2793 MeV). Validated against a third, independent case — `run3_3.mac`'s Po-218 peak (a different source geometry, 3 spot sources vs. one disc) — which the calibration was **not** fit to: calibrated peak lands at 6.0000 MeV vs. the true 6.0023 MeV, 2.3 keV off. The dead-layer loss turns out to be only weakly sensitive to the small angular spread between these macros' source geometries, so a single calibration generalizes reasonably well across them — but it's still specific to this detector geometry and should be re-derived if the dead-layer thickness, source encapsulation, or production cut changes.
+
+`PIPS_calib_slope`/`PIPS_calib_offset` in `csv_to_dat()` are the two adjustable constants. This only rescales the channel axis for display — it does not touch `E_pips` (the actual Geant4 energy deposit), so `Total energy (PIPS)` in the run summary remains the true raw deposited energy.
 
 ### Example spectra
 

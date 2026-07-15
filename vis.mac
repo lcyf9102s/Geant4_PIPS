@@ -1,4 +1,4 @@
-/vis/open OGL
+/vis/open OGLSQt
 /vis/viewer/set/viewpointVector 1 1 1
 /vis/drawVolume
 /vis/viewer/set/autoRefresh true
